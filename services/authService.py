@@ -20,9 +20,10 @@ def hashPass(password: str):
     hashedPass = crypt.hash(password)
     return hashedPass
 
-def accesToken(username: str):
+def accesToken(username: str, role: str):
     access_token = {"sub": username,
-                    "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION)}
+                    "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION),
+                    "role": role}
 
     return {"access_token": jwt.encode(access_token, SECRET, algorithm=ALGORITHM), "token_type": "bearer"}
 
@@ -32,7 +33,6 @@ async def auth_user(token: str = Depends(oauth2)):
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Credenciales de autenticación inválidas",
         headers={"WWW-Authenticate": "Bearer"})
-
     try:
         username = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("sub")
         if username is None:
@@ -41,7 +41,9 @@ async def auth_user(token: str = Depends(oauth2)):
     except JWTError:
         raise exception
 
-    return userService.searchUserByUserName(username)
+    user = userService.userJSON(username=username)
+
+    return user
 
 
 async def current_user(user: user.User = Depends(auth_user)):

@@ -99,11 +99,11 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="La contraseña no es correcta")
 
-    return authService.accesToken(user.username)
+    return authService.accesToken(user.username, user.role)
 
 oauth2_scheme = HTTPBearer()
 
-@user.get("/users/me")
-async def me(credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme)):
-    user_data = authService.auth_user(credentials.credentials)
-    return user_data
+@user.post("/users/me")
+async def me(token: str = Header(None)):
+    return await authService.auth_user(token)
+
