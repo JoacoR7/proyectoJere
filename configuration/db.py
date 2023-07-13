@@ -7,5 +7,3 @@ conn = SessionLocal()
 meta = MetaData()
 
 
-#TODO: investigar sobre enum en mysql (para roles)
-
