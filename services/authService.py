@@ -21,7 +21,7 @@ def hashPass(password: str):
     return hashedPass
 
 def accesToken(username: str, role: str):
-    access_token = {"sub": username,
+    access_token = {"user": username,
                     "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_DURATION),
                     "role": role}
 
@@ -34,7 +34,7 @@ async def auth_user(token: str = Depends(oauth2)):
         detail="Credenciales de autenticación inválidas",
         headers={"WWW-Authenticate": "Bearer"})
     try:
-        username = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("sub")
+        username = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("user")
         if username is None:
             raise exception
 
