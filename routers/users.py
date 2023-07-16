@@ -13,6 +13,37 @@ from datetime import datetime
 user = APIRouter()
 crypt = CryptContext(schemes=["bcrypt"])
 
+"""
+Funciones:
+C: createUser
+R: getUsers (obtengo todos los usuarios) - getUser (obtengo un usuario por su id)
+U: disableUser - enableUser
+D: deleteUser
+"""
+
+# Registrar usuario
+@user.post("/register", name="Registrar nuevo usuario")
+async def createUser(user: User):
+    findUser = userService.searchUserByUserName(user.username)
+    if findUser:
+        return {"message": "El nombre de usuario ya existe"}
+    hashedPassword = authService.hashPass(user.password)
+    new_user = users.insert().values(
+        name=user.name,
+        username=user.username,
+        password=hashedPassword,
+        disabled_at=None,
+        role=user.role
+    )
+    try:
+        result = conn.execute(new_user)
+        conn.commit()  # Confirmar la transacción
+        print(result.lastrowid)
+        return {"message": "Usuario creado exitosamente"}
+    except exc.SQLAlchemyError as e:
+        conn.rollback()  # Revertir la transacción en caso de error
+        return {"message": f"Error al crear el usuario: {str(e)}"}
+
 # Obtener listado de usuarios de la db
 @user.get("", name="Obtener todos los usuarios de la bd")
 async def getUsers(): 
@@ -38,7 +69,7 @@ async def getUsers():
 
 # Obtener un usuario por path ".../user/id"
 @user.get("/{id}", name="Obtener un usuario por su id")
-async def getUserById(id: int):
+async def getUser(id: int):
     # Busca un usuario por su ID
     result = userService.searchUserById(id)
     if not result:
@@ -54,6 +85,11 @@ async def getUserById(id: int):
     # Convierte el diccionario en formato JSON
     json = jsonable_encoder(data)
     return JSONResponse(content=json)
+
+# Obtengo los datos del usuario 
+@user.post("/me", name="Perfil usuario")
+async def me(token: str = Header(None)):
+    return await authService.auth_user(token)
 
 @user.put("/disable/{id}", name="Deshabilitar usuario")
 async def disableUser(id: int):
@@ -99,48 +135,25 @@ async def deleteUser(id: int):
     conn.commit()
     return {"message": "Usuario eliminado exitosamente"}
 
-# Registrar usuario
-@user.post("/register", name="Registrar nuevo usuario")
-async def createUser(user: User):
-    findUser = userService.searchUserByUserName(user.username)
-    if findUser:
-        return {"message": "El nombre de usuario ya existe"}
-    hashedPassword = authService.hashPass(user.password)
-    new_user = users.insert().values(
-        name=user.name,
-        username=user.username,
-        password=hashedPassword,
-        disabled_at=None,
-        role=user.role
-    )
-    try:
-        result = conn.execute(new_user)
-        conn.commit()  # Confirmar la transacción
-        print(result.lastrowid)
-        return {"message": "Usuario creado exitosamente"}
-    except exc.SQLAlchemyError as e:
-        conn.rollback()  # Revertir la transacción en caso de error
-        return {"message": f"Error al crear el usuario: {str(e)}"}
-
-
 # Login de usuario
 @user.post("/login", name="Login usuario")
 async def login(form: OAuth2PasswordRequestForm = Depends()):
+    # Busco el usuario
     user = userService.searchUserByUserName(form.username)
+    # Si no existe, devuelvo error
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario no es correcto")
 
+    # Si existe, pero la contraseña es incorrecta, devuelvo error
     if not crypt.verify(form.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="La contraseña no es correcta")
 
-    return authService.accesToken(user.username, user.role)
+    # Si existe, y la contraseña es correcta, devuelvo el token que 
+    # tendrá la info del nombre de usuario, rol, id y expiración
+    return authService.accesToken(user.username, user.role, user.id)
 
-oauth2_scheme = HTTPBearer()
 
-@user.post("/me", name="Perfil usuario")
-async def me(token: str = Header(None)):
-    return await authService.auth_user(token)
 
 

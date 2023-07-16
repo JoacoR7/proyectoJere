@@ -9,6 +9,12 @@ from services import vehicleService
 
 vehicle = APIRouter()
 
+"""
+Funciones:
+C: createVehicle
+"""
+
+# Endpoint creación vehículo
 @vehicle.post("/create")
 def createVehicle(newVehicle: Vehicle):
     patente = newVehicle.licence_plate.upper()
@@ -25,4 +31,4 @@ def createVehicle(newVehicle: Vehicle):
         return {"message": "Vehículo creado exitosamente"}
     except exc.SQLAlchemyError as e:
         conn.rollback() # Revertir la transacción en caso de error
-        return {"message": f"Error al guardar la imagen: {str(e)}"}
+        return {"message": f"Error al guardar el vehículo: {str(e)}"}

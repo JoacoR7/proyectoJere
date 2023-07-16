@@ -8,3 +8,4 @@ class Image(BaseModel):
     type: str
     validated: bool
     validation_attemps: int
+    metadata: str

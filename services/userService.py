@@ -16,19 +16,19 @@ def searchUserByUserName(username: str):
     print(result)
     return result
 
-def userJSON(username=None, id=None):
-    if id != None:
-        result = searchUserById(id)
-    elif username != None:
-        result = searchUserByUserName(username)
+# Devuelvo un diccionario con los datos del usuario
+def userJSON(username=None, id=None, result = None):
+    if result == None:
+        if id != None:
+            result = searchUserById(id)
+        elif username != None:
+            result = searchUserByUserName(username)
     
     user = {
         "id": result[0],
-        "name": result[1],
-        "username": result[2],
-        "disabled": result[4] != None,
-        "role": result[5]
+        "name": result[1]
+        #"username": result[2],
+        #"disabled": result[4] != None,
+        #"role": result[5]
     }
-    
-    user = jsonable_encoder(user)
-    return JSONResponse(content=user)
+    return user

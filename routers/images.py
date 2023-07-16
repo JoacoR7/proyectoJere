@@ -9,13 +9,20 @@ from PIL import Image
 
 image = APIRouter()
 
+"""
+Funciones:
+C: upload
+R: getImage
+"""
+
 @image.post("/upload")
-def upload(case_id: int, validated: bool, validation_attemps: int, photo: bytes = File(...)):
+def upload(case_id: int, validated: bool, validation_attemps: int, metadata: str, photo: bytes = File(...)):
     query = imageModel.insert().values(
         photo=photo,
         case_id=case_id,
         validated=validated,
-        validation_attemps=validation_attemps
+        validation_attemps=validation_attemps,
+        metadata=metadata
     )
     try:
         result = conn.execute(query)

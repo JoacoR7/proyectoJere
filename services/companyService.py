@@ -14,3 +14,18 @@ def searchCompanyByName(name: str):
     query = company.select().where(company.c.name == name)
     result = conn.execute(query).first()
     return result
+
+# Devuelvo un diccionario con los datos de la compañía
+def companyJSON(name=None, id=None, result = None):
+    if result == None:
+        if id != None:
+            result = searchCompanyById(id)
+        elif name != None:
+            result = searchCompanyByName(name)
+    
+    company = {
+        "id": result[0],
+        "name": result[1]
+    }
+    
+    return company

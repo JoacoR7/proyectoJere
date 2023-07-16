@@ -1,5 +1,5 @@
-from sqlalchemy import Table, Column
-from sqlalchemy.sql.sqltypes import Integer, String, BLOB, Boolean
+from sqlalchemy import Table, Column, ForeignKey
+from sqlalchemy.sql.sqltypes import Integer, BLOB, Boolean, String
 from configuration.db import meta, engine
 
 image = Table("case_photo", meta, 
@@ -7,6 +7,7 @@ image = Table("case_photo", meta,
             Column("photo", BLOB, nullable=False),
             Column("case_id", Integer, nullable=False),
             Column("validated", Boolean, nullable=False),
-            Column("validation_attemps", Integer, nullable=False))
+            Column("validation_attemps", Integer, nullable=False),
+            Column("metadata", String(150), nullable=True))
 
 meta.create_all(engine)
