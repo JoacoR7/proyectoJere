@@ -1,5 +1,5 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Header, Request
+from fastapi.security import OAuth2PasswordBearer, HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -7,15 +7,17 @@ from services import userService
 from schemas import user
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+import main
 
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_DURATION = 180
+ACCESS_TOKEN_DURATION = 120
 SECRET = "201d573bd7d1344d3a3bfce1550b69102fd11be3db6d379508b6cccc58ea230b"
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
 
 crypt = CryptContext(schemes=["bcrypt"])
+security = HTTPBearer()
 
 # Encripto la contraseña
 def hashPass(password: str):
@@ -30,34 +32,58 @@ def accesToken(username: str, role: str, id: int):
                     "role": role, 
                     "id": id}
 
-    return {"access_token": jwt.encode(access_token, SECRET, algorithm=ALGORITHM), "token_type": "bearer"}
+    return jwt.encode(access_token, SECRET, algorithm=ALGORITHM)
 
 # Verifico que el token otorgado sea correcto o válido (que no haya expirado)
-async def auth_user(token: str = Depends(oauth2)):
-    exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Credenciales de autenticación inválidas",
-        headers={"WWW-Authenticate": "Bearer"})
+async def auth_user(request: Request):
     try:
-        username = jwt.decode(token, SECRET, algorithms=[ALGORITHM]).get("user")
-        if username is None:
-            raise exception
+        scheme, token = request.headers.get("Authorization").split()
+    except AttributeError:
+        content = {"detail": "Token vacío"}
+        status_code = status.HTTP_400_BAD_REQUEST
+        response = JSONResponse(content=content, status_code=status_code)
+        return None, response
+
+    content = {"detail": "Credenciales de autenticación inválidas"}
+    status_code=status.HTTP_401_UNAUTHORIZED
+    response = JSONResponse(content=content, status_code=status_code)
+
+    try:
+        user = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
+        if user is None:
+            return None, response
 
     except JWTError:
-        raise exception
-    
-    except AttributeError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token vacío")
+        return None, response
 
-    return JSONResponse(content=jsonable_encoder(userService.userJSON(username=username)))
+    return user, None
 
 
-async def current_user(user: user.User = Depends(auth_user)):
-    if user.disabled:
+async def current_user(request):
+    user = request.state.user
+    id = user.get("id")
+    userDB = userService.searchUserById(id)
+    if userDB[4] != None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Usuario inactivo")
+    content = {
+        "name": userDB[1],
+        "username": userDB[2],
+        "role": userDB[5]
+    }
+    data = jsonable_encoder(content)
+    return JSONResponse(content=data, status_code=status.HTTP_200_OK)
 
-    return user
+async def verifyAdmin(request):
+    role = request.state.user.get("role")
+    if role != "admin":
+        raise HTTPException(detail="No cuentas con los permisos para ejecutar esta acción", status_code=status.HTTP_401_UNAUTHORIZED)
+
+    
+
+
+
+
 
 

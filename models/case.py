@@ -5,7 +5,7 @@ from configuration.db import meta, engine
 case = Table("cases", meta, 
             Column("id", Integer, primary_key=True, autoincrement=True, nullable= False),
             Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
-            Column("company_id", Integer, ForeignKey("companies.id", ondelete="CASCADE"), nullable=False),
+            Column("business_id", Integer, ForeignKey("business.id", ondelete="CASCADE"), nullable=False),
             Column("vehicle_id", Integer, ForeignKey("vehicles.id", ondelete="CASCADE"), nullable=False),
             Column("accident_number", Integer, nullable=False),
             Column("created_at", DateTime, nullable=False),

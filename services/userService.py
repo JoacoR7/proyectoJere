@@ -2,6 +2,7 @@ from models.user import users
 from configuration.db import conn
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi import Header
 
 #Buscar usuario por id
 def searchUserById(id: int):
@@ -13,7 +14,6 @@ def searchUserById(id: int):
 def searchUserByUserName(username: str):
     query = users.select().where(users.c.username == username)
     result = conn.execute(query).first()
-    print(result)
     return result
 
 # Devuelvo un diccionario con los datos del usuario
