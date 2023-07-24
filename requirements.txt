@@ -79,9 +79,6 @@ python-decouple==3.8
 python-jose==3.3.0
 python-json-logger==2.0.7
 python-multipart==0.0.6
-pytz==2023.3
-pywin32==306
-pywinpty==2.0.10
 PyYAML==6.0
 pyzmq==25.1.0
 repoze.lru==0.7
