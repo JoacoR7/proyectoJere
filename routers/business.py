@@ -26,7 +26,7 @@ async def createbusiness(newbusiness: Business, request: Request):
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail="La compañía ya existe")
     newbusiness = businessModel.insert().values(
         name=newbusiness.name,
-        case_dropeed_letter=newbusiness.case_dropped_letter
+        case_dropped_letter=newbusiness.case_dropped_letter
 
     )
     try:

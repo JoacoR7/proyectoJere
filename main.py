@@ -36,7 +36,7 @@ app.middleware('http')(auth_middleware)
 
 # Incluye las rutas definidas en la carpeta routers
 app.include_router(users.user, tags=["Endpoints usuarios"], prefix="/users")
-app.include_router(business.business, tags=["Endpoints compañías"], prefix="/company")
+app.include_router(business.business, tags=["Endpoints compañías"], prefix="/business")
 app.include_router(images.image, tags=["Endpoints imagen"], prefix="/images")
 app.include_router(vehicles.vehicle, tags=["Endpoints vehículos"], prefix="/vehicle")
 app.include_router(cases.case, tags=["Endpoints casos"], prefix="/case")
