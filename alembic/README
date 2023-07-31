@@ -1,1 +1,5 @@
 Generic single-database configuration.
+
+Para solucionar el error de la creación de compañía, ejecutá el siguiente comando:
+
+alembic upgrade head
