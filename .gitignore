@@ -3,4 +3,4 @@ env.py
 gunicorn_start
 logs/
 *.pyc
-
+*.pyo

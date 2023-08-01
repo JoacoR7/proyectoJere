@@ -17,7 +17,7 @@ app = FastAPI()
 
 async def auth_middleware(request: Request, call_next):
     current_path = request.url.path
-    unprotected_routes = ["/docs", "/openapi.json", "/users/login", "/users/register", "/users/update/"]
+    unprotected_routes = ["/docs", "/openapi.json", "/users/login", "/users/register"]
     #protected_routes = []
     if current_path in unprotected_routes or current_path[:-1] in unprotected_routes: #or current_path not in protected_routes:
         response = await call_next(request)
