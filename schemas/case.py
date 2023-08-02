@@ -4,10 +4,9 @@ from datetime import datetime
 
 class Case(BaseModel):
     user_id: int
-    company_id: int
+    business_id: int
     vehicle_id: int
     accident_number: int
-    created_at: datetime
     finished_at: Optional[datetime]
     dropped: Optional[bool]
     policy: Optional[str]
@@ -17,3 +16,7 @@ class Case(BaseModel):
     accident_date: Optional[datetime]
     accident_place: Optional[str]
     thef_type: Optional[str]
+
+class AccessToken(BaseModel):
+    case_access_token: str
+    case_id: str

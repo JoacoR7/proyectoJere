@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from configuration.db import conn
 from models.business import business as businessModel
 from services import businessService, authService
-from schemas.business import Business
+from schemas.business import Business, BusinessName
 from sqlalchemy import exc
 
 business = APIRouter()
@@ -68,16 +68,16 @@ async def getbusiness(id: int):
     return JSONResponse(content=json)
 
 @business.patch("/changeName/{id}", name="Cambiar nombre compañía")
-async def changebusinessName(id: int, name: str, request: Request):
+async def changebusinessName(id: int, business: BusinessName, request: Request):
     await authService.verifyAdmin(request)
     result = businessService.searchBusinessById(id)
     if not result:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Compañía no encontrada")
-    result = businessService.searchBusinessByName(name)
+    result = businessService.searchBusinessByName(business.name)
     if result:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El nombre de la compañía ya existe")
     try:
-        query = businessModel.update().where(businessModel.c.id == id).values(name=name)
+        query = businessModel.update().where(businessModel.c.id == id).values(name=business.name)
         result = conn.execute(query)
     except:
         raise HTTPException(

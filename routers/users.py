@@ -6,16 +6,12 @@ from sqlalchemy import exc
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from services import authService, userService
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from passlib.context import CryptContext
 from datetime import datetime
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Optional
 
 user = APIRouter()
 crypt = CryptContext(schemes=["bcrypt"])
-oauth2 = OAuth2PasswordBearer(tokenUrl="http://127.0.0.1:8000/login")
-security = HTTPBearer()
 
 """
 Funciones:

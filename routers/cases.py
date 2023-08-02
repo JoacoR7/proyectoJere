@@ -3,9 +3,11 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from configuration.db import conn
 from models.case import case as caseModel
-from schemas.case import Case
+from models.caseAccessToken import caseAccessToken as AccessModel
+from schemas.case import Case, AccessToken
 from sqlalchemy import exc
 from services import businessService, caseService, userService, vehicleService
+from datetime import datetime
 
 case = APIRouter()
 
@@ -17,14 +19,15 @@ R: readCase
 
 # Crear caso
 @case.post("/create")
-async def createCase(case: Case, userId: int, businessId: int, vehicleId: int, token: str = Header(None)):
+async def createCase(case: Case):
     # Realizo la query para crear el caso con los valores correspondientes
+    createdAt = datetime.now()
     newCase = caseModel.insert().values(
-        user_id=userId,
-        business_id=businessId,
-        vehicle_id=vehicleId,
+        user_id=case.user_id,
+        business_id=case.business_id,
+        vehicle_id=case.vehicle_id,
         accident_number = case.accident_number,
-        created_at=case.created_at,
+        created_at=createdAt,
         finished_at=case.finished_at,
         dropped=case.dropped,
         policy=case.policy,
@@ -37,7 +40,8 @@ async def createCase(case: Case, userId: int, businessId: int, vehicleId: int, t
 
     )
     try:
-        conn.execute(newCase)
+        result = conn.execute(newCase)
+        caseService.createAccessToken(createdAt, result.lastrowid)
         conn.commit()  # Confirmar la transacción
         return {"message": "Caso creado exitosamente"}
     except exc.SQLAlchemyError as e:
@@ -104,3 +108,20 @@ async def changeCompanyName(id: int):
             status_code=status.HTTP_400_BAD_REQUEST)
     conn.commit()
     return {"message": "Caso abandonado exitosamente"} 
+
+@case.post("/validate")
+async def validateToken(caseAccess: AccessToken):
+    case, response = caseService.verifyAccessToken(caseAccess.case_access_token)
+    if case == None:
+        return response
+    """query = AccessModel.select().where(AccessModel.c.access_token == caseAccess.case_access_token)
+    result = conn.execute(query).first()"""
+    if str(case.get("caseId")) != caseAccess.case_id:
+        content = {"is_valid": False, "detail": "Token válido, pero id de caso no coincide"}
+        status_code=status.HTTP_200_OK
+        response = JSONResponse(content=content, status_code=status_code)
+    else:
+        content = {"is_valid": True, "detail": "Token válido"}
+        status_code=status.HTTP_200_OK
+        response = JSONResponse(content=content, status_code=status_code)
+    return response

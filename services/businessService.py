@@ -25,7 +25,8 @@ def businessJSON(name=None, id=None, result = None):
     
     business = {
         "id": result[0],
-        "name": result[1]
+        "name": result[1],
+        "caseLetter": result[2]
     }
     
     return business
