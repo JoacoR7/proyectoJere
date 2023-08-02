@@ -6,7 +6,7 @@ import env
 db_url = f"mysql+pymysql://{env.DB_USER}:{env.DB_PASSWORD}@{env.DB_HOST}:{env.DB_PORT}/{env.DB_NAME}"
 
 # Crear el motor de la base de datos
-engine = create_engine(db_url)
+engine = create_engine(db_url,isolation_level="READ UNCOMMITTED")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 conn = SessionLocal()
 meta = MetaData()
