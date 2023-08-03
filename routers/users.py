@@ -27,6 +27,8 @@ async def createUser(user: User):
     findUser = userService.searchUserByUserName(user.username)
     if findUser:
         return {"message": "El nombre de usuario ya existe"}
+    if user.role != "admin" and user.role != "operator":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Rol incorrecto")
     hashedPassword = authService.hashPass(user.password)
     new_user = users.insert().values(
         name=user.name,
@@ -165,6 +167,8 @@ async def updateUser(id, userUpdate: UserUpdate, request: Request):
         updateData["password"] = newPass
     if userUpdate.role != None:
         await authService.verifyAdmin(request)
+        if userUpdate.role != "admin" and userUpdate.role != "operator":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Rol incorrecto")
         updateData["role"] = userUpdate.role
     
     try:
