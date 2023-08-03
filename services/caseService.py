@@ -16,12 +16,16 @@ def searchCaseById(id: int):
     result = conn.execute(query).first()
     return result
 
-def createAccessToken(creationDate, caseId):
+def generateToken(creationDate, caseId, time):
     
-    exp = creationDate + timedelta(minutes=1440)
+    exp = creationDate + timedelta(minutes=time)
     access_token = {"caseId": caseId,
                     "exp": exp}
     access_token = jwt.encode(access_token, SECRET, algorithm=ALGORITHM)
+    return access_token, exp
+
+def createAccessToken(creationDate, caseId, time=1440):
+    access_token, exp = generateToken(creationDate, caseId, time)
     query = caseAccessModel.insert().values(
         access_token = access_token,
         due_date = exp 
@@ -48,3 +52,8 @@ def verifyAccessToken(accessToken):
         return None, response
     
     return case, None
+
+def searchAccessToken(accessToken):
+    query = caseAccessModel.select().where(caseAccessModel.c.access_token == accessToken)
+    result = conn.execute(query).first()
+    return result

@@ -20,3 +20,7 @@ class Case(BaseModel):
 class AccessToken(BaseModel):
     case_access_token: str
     case_id: str
+
+class AccessTokenModify(BaseModel):
+    case_access_token: str
+    hour_from_now: Optional[int] = 0

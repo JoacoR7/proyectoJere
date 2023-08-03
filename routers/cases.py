@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
-from schemas.case import Case, AccessToken
+from schemas.case import Case, AccessToken, AccessTokenModify
 from sqlalchemy import exc
 from services import businessService, caseService, userService, vehicleService
 from datetime import datetime
@@ -125,3 +125,22 @@ async def validateToken(caseAccess: AccessToken):
         status_code=status.HTTP_200_OK
         response = JSONResponse(content=content, status_code=status_code)
     return response
+
+@case.post("/expire")
+async def modifyAccessToken(accessToken: AccessTokenModify):
+    case = caseService.searchAccessToken(accessToken.case_access_token)
+    if not case:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token de acceso no encontrado")
+    access_token, exp = caseService.generateToken(datetime.now(), case[0], accessToken.hour_from_now*60)
+    updateData = {
+        "access_token": access_token,
+        "due_date": exp
+    }
+    try:
+        query = AccessModel.update().where(AccessModel.c.access_token == accessToken.case_access_token).values(**updateData)
+        conn.execute(query)
+        conn.commit()
+    except:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    
+    return {"message": "Token actualizado exitosamente"}
