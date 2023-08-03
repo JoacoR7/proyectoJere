@@ -57,7 +57,7 @@ async def readCase(id: int):
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="El caso no existe")
     # Creo un diccionario con los datos del usuario, compañía y vehículo correspondiente
     user = userService.userJSON(id=result[1])
-    company = businessService.companyJSON(id=result[2])
+    company = businessService.businessJSON(id=result[2])
     vehicle = vehicleService.vehicleJSON(id=result[3])
     data = {
         "id": result[0],

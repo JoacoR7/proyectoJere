@@ -24,5 +24,6 @@ def downgrade() -> None:
 
 
 def upgrade() -> None:
-    op.alter_column('table_name', 'old_column_name', new_column_name='new_column_name', existing_type=sa.Text, nullable=False)
+    op.alter_column("business", "case_dropeed_letter", new_column_name="case_dropped_letter", existing_type=sa.Text, nullable=False)
+    op.add_column(table_name='vehicles', column=sa.Column('type', sa.Enum("car", "pickup"), nullable=False))
     # ### end Alembic commands ###
