@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
-from schemas.case import Case, AccessToken, AccessTokenModify
+from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify
 from sqlalchemy import exc
 from services import businessService, caseService, userService, vehicleService
 from datetime import datetime
@@ -144,3 +144,47 @@ async def modifyAccessToken(accessToken: AccessTokenModify):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     
     return {"message": "Token actualizado exitosamente"}
+
+@case.patch("/update/{id}")
+async def modifyCase(case: CaseModify, id: int):
+    caseToUpdate = caseService.searchCaseById(id)
+    if not caseToUpdate:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="El caso no existe")
+    updateData = {}
+    if case.user_id != None:
+        updateData["user_id"] = case.user_id
+    if case.business_id != None:
+        updateData["business_id"] = case.business_id
+    if case.vehicle_id != None:
+        updateData["vehicle_id"] = case.vehicle_id
+    if case.accident_number != None:
+        updateData["accident_number"] = case.accident_number
+    if case.finished_at != None:
+        updateData["finished_at"] = case.finished_at
+    if case.dropped != None:
+        updateData["dropped"] = case.dropped
+    if case.policy != None:
+        updateData["policy"] = case.policy
+    if case.insured_name != None:
+        updateData["insured_name"] = case.insured_name
+    if case.insured_dni != None:
+        updateData["insured_dni"] = case.insured_dni
+    if case.insured_phone != None:
+        updateData["insured_phone"] = case.insured_phone
+    if case.accident_date != None:
+        updateData["accident_date"] = case.accident_date
+    if case.accident_place != None:
+        updateData["accident_place"] = case.accident_place
+    if case.thef_type != None:
+        thefType = ["partial", "inner", "outside"]
+        if case.thef_type not in thefType:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tipo de robo incorrecto")
+        updateData["thef_type"] = case.thef_type
+    try:
+        query = caseModel.update().where(caseModel.c.id == id).values(**updateData)
+        conn.execute(query)
+        conn.commit()
+    except:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    
+    return {"message": "Caso actualizado exitosamente"}

@@ -173,7 +173,6 @@ async def updateUser(id, userUpdate: UserUpdate, request: Request):
     
     try:
         query = users.update().where(users.c.id == id).values(**updateData)
-        print(query)
         conn.execute(query)
         conn.commit()
     except:
