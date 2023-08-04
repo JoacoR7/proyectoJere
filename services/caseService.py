@@ -6,6 +6,7 @@ from jose import jwt, JWTError
 from sqlalchemy import exc
 from fastapi import status
 from fastapi.responses import JSONResponse
+from services import userService, businessService, vehicleService
 
 ALGORITHM = "HS256"
 SECRET = "201d573bd7d1344d3a3bfce1550b69102fd11be3db6d379508b6cccc58ea230b"
@@ -57,3 +58,28 @@ def searchAccessToken(accessToken):
     query = caseAccessModel.select().where(caseAccessModel.c.access_token == accessToken)
     result = conn.execute(query).first()
     return result
+
+def caseJSON(userId, companyId, vehicleId, caseId, accidentNumber, createdAt, finishedAt, dropped,
+            policy, insuredName, insuredDNI, insuredPhone, accidentDate, accidentPlace, thefType):
+    user = userService.userJSON(id=userId)
+    business = businessService.businessJSON(id=companyId)
+    vehicle = vehicleService.vehicleJSON(id=vehicleId)
+    case = {
+        "id": caseId,
+        "user": user,
+        "business": business,
+        "vehicle": vehicle,
+        "accident_number": accidentNumber,
+        "created_at": createdAt,
+        "finished_at": finishedAt,
+        "dropped": dropped,
+        "policy": policy,
+        "insured_name": insuredName,
+        "insured_dni": insuredDNI,
+        "insured_phone": insuredPhone,
+        "accident_date": accidentDate,
+        "accident_place": accidentPlace,
+        "theft_type": thefType
+    }
+
+    return case

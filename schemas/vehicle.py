@@ -6,3 +6,4 @@ class Vehicle(BaseModel):
     brand: str
     model: str
     licence_plate: str
+    type: str

@@ -5,7 +5,7 @@ from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
 from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify
-from sqlalchemy import exc
+from sqlalchemy import exc, desc
 from services import businessService, caseService, userService, vehicleService
 from datetime import datetime
 
@@ -49,35 +49,31 @@ async def createCase(case: Case):
         return {"message": f"Error al crear el caso: {str(e)}"}
 
 # Obtengo la información del caso según su id (y si existe)
-@case.get("/{id}")
+@case.get("/get/{id}")
 async def readCase(id: int):
     # Busca un caso por su ID
     result = caseService.searchCaseById(id)
     if not result:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="El caso no existe")
     # Creo un diccionario con los datos del usuario, compañía y vehículo correspondiente
-    user = userService.userJSON(id=result[1])
-    company = businessService.businessJSON(id=result[2])
-    vehicle = vehicleService.vehicleJSON(id=result[3])
-    data = {
-        "id": result[0],
-        "user": user,
-        "business": company,
-        "vehicle": vehicle,
-        "accident_number": result[4],
-        "created_at": result[5],
-        "finished_at": result[6],
-        "dropped": result[7],
-        "policy": result[8],
-        "insured_name": result[9],
-        "insured_dni": result[10],
-        "insured_phone": result[11],
-        "accident_date": result[12],
-        "accident_place": result[13],
-        "theft_type": result[14]
-    }
+    data = caseService.caseJSON(result[1], result[2], result[3], result[0],
+        result[4], result[5], result[6], result[7], result[8], result[9],
+        result[10], result[11], result[12], result[13], result[14])
     # Convierte el diccionario en formato JSON
     json = jsonable_encoder(data)
+    return JSONResponse(content=json)
+
+@case.get("/all")
+async def getCases():
+    query = caseModel.select().order_by(desc(caseModel.c.created_at))
+    results = conn.execute(query).fetchall()
+    cases = {}
+    for index, result in enumerate(results):
+        case = caseService.caseJSON(result[1], result[2], result[3], result[0],
+        result[4], result[5], result[6], result[7], result[8], result[9],
+        result[10], result[11], result[12], result[13], result[14])
+        cases[index] = case
+    json = jsonable_encoder(cases)
     return JSONResponse(content=json)
 
 # Borrar caso

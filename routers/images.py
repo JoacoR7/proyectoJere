@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File
 from fastapi.responses import StreamingResponse
-from schemas.image import Image
+from schemas.image import Image as imageSchema
 from models.image import image as imageModel
 from configuration.db import conn
 from sqlalchemy import exc
@@ -16,13 +16,14 @@ R: getImage
 """
 
 @image.post("/upload")
-def upload(case_id: int, validated: bool, validation_attemps: int, metadata: str, photo: bytes = File(...)):
+def upload(photo: imageSchema, newPhoto: bytes = File(...)):
+    print(photo)
     query = imageModel.insert().values(
-        photo=photo,
-        case_id=case_id,
-        validated=validated,
-        validation_attemps=validation_attemps,
-        metadata=metadata
+        photo=newPhoto,
+        case_id=photo.case_id,
+        validated=photo.validated,
+        validation_attemps=photo.validation_attemps,
+        metadata=photo.metadata
     )
     try:
         result = conn.execute(query)

@@ -7,17 +7,11 @@ from services import authService
 app = FastAPI()
 
 #NOTAS
-# Middleware que verifica el token del usuario para permitirle o no ejecutar tareas
-# Servicio de autenticación de rol admin para verificar si tiene permisos para realizar cierta tarea
-# Update user con patch sólo para el dato correspondiente
-# Para acceder a Koyeb tenés que poner la tarjeta :(
-# Render parece ser gratuito, pero hay que poner el proyecto como público en github para poder ver si funciona
-# El id de usuario, compañía, etc lo recibo como json?
-# Case dropped letter es de caso, no?
+# Revisar photo upload
 
 async def auth_middleware(request: Request, call_next):
     current_path = request.url.path
-    unprotected_routes = ["/docs", "/openapi.json", "/users/login", "/users/register"]
+    unprotected_routes = ["/docs", "/openapi.json", "/users/login", "/users/register", "/images/upload"]
     #protected_routes = []
     if current_path in unprotected_routes or current_path[:-1] in unprotected_routes: #or current_path not in protected_routes:
         response = await call_next(request)

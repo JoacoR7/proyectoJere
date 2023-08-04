@@ -4,7 +4,7 @@ from configuration.db import conn
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-def verificarPatente(patente):
+"""def verificarPatente(patente):
     formato1 = r'^[A-Z]{3}\s\d{3}$'
     formato2 = r'^[A-Z]{2}\s\d{3}\s?[A-Z]{2}$'
     
@@ -12,7 +12,7 @@ def verificarPatente(patente):
         return True
     else:
         return False
-    
+    """
 #Buscar vehículo por id
 def searchVehicleById(id: int):
     query = vehicle.select().where(vehicle.c.id == id)

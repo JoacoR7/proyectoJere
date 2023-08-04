@@ -18,12 +18,13 @@ C: createVehicle
 @vehicle.post("/create")
 def createVehicle(newVehicle: Vehicle):
     patente = newVehicle.licence_plate.upper()
-    if not vehicleService.verificarPatente(patente):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No se respeta el formato de patente")
+    """if not vehicleService.verificarPatente(patente):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No se respeta el formato de patente")"""
     query = vehicleModel.insert().values(
         brand=newVehicle.brand,
         model=newVehicle.model,
-        licence_plate=patente
+        licence_plate=patente,
+        type=newVehicle.type
     )
     try:
         conn.execute(query)
