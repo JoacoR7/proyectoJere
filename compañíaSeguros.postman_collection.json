@@ -160,7 +160,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTA5ODcwMzEsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.WhTYDV5IAW450ySzeIm3Hu8HDSb05I_V3vGzjfot3bE",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTExOTQ1MzcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.bJlvRKBmeklE9DqMPaPlNsO4QUpIWx34CAR140Y__fY",
 									"type": "string"
 								}
 							]
@@ -233,8 +233,31 @@
 				{
 					"name": "obtenerCasoPorId",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTExOTQ1MzcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.bJlvRKBmeklE9DqMPaPlNsO4QUpIWx34CAR140Y__fY",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/case/get/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"case",
+								"get",
+								"3"
+							]
+						}
 					},
 					"response": []
 				},
@@ -276,6 +299,76 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "updateCase",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTExMTc0MDMsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.UHyXODKaDDpz5tauvdyH2WSusUSXpj0_nYWa20YQuuY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"user_id\": 2,\r\n    \"business_id\": 3,\r\n    \"vehicle_id\": 2,\r\n    \"accident_number\": 3,\r\n    \"policy\": \"abc\",\r\n    \"insured_name\": \"John Doe\",\r\n    \"insured_dni\": \"123456789\",\r\n    \"insured_phone\": \"987654321\",\r\n    \"accident_place\": \"Mendoza, Godoy Cruz\",\r\n    \"thef_type\": \"inner\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/case/update/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"case",
+								"update",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ObtenerTodosLosCasos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTExOTQ1MzcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.bJlvRKBmeklE9DqMPaPlNsO4QUpIWx34CAR140Y__fY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/case/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"case",
+								"all"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -292,7 +385,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"str\",\r\n    \"username\": \"string\",\r\n    \"password\": \"str\",\r\n    \"role\": \"admin\"\r\n}",
+							"raw": "{\r\n    \"name\": \"str\",\r\n    \"username\": \"s\",\r\n    \"password\": \"str\",\r\n    \"role\": \"operator\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -574,6 +667,85 @@
 								"users",
 								"update",
 								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "images",
+			"item": [
+				{
+					"name": "obtenerImagenPorId",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTExOTQ1MzcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.bJlvRKBmeklE9DqMPaPlNsO4QUpIWx34CAR140Y__fY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/images/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"images",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "vehicles",
+			"item": [
+				{
+					"name": "crearVehiculo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTExOTQ1MzcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.bJlvRKBmeklE9DqMPaPlNsO4QUpIWx34CAR140Y__fY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"brand\": \"Peugeot\",\r\n    \"model\": \"2008\",\r\n    \"licence_plate\": \"AAA 123 AAA\",\r\n    \"type\": \"pickup\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/vehicle/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"vehicle",
+								"create"
 							]
 						}
 					},
