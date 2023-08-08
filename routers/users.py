@@ -9,6 +9,7 @@ from services import authService, userService
 from passlib.context import CryptContext
 from datetime import datetime
 from typing import Optional
+from utils import customResponses
 
 user = APIRouter()
 crypt = CryptContext(schemes=["bcrypt"])
@@ -26,9 +27,7 @@ D: deleteUser
 async def createUser(user: User):
     findUser = userService.searchUserByUserName(user.username)
     if findUser:
-        return {"message": "El nombre de usuario ya existe"}
-    if user.role != "admin" and user.role != "operator":
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Rol incorrecto")
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El nombre de usuario ya existe")
     hashedPassword = authService.hashPass(user.password)
     new_user = users.insert().values(
         name=user.name,
@@ -37,13 +36,17 @@ async def createUser(user: User):
         role=user.role
     )
     try:
-        result = conn.execute(new_user)
+        conn.execute(new_user)
         conn.commit()  # Confirmar la transacción
-        return {"message": "Usuario creado exitosamente"}
+        return customResponses.JsonEmitter.response(status.HTTP_201_CREATED, detail="Usuario creado exitosamente")
+    except exc.DataError as exception:
+        conn.rollback()
+        sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}: rol incorrecto", exception=exception)
     except exc.SQLAlchemyError as e:
         conn.rollback()  # Revertir la transacción en caso de error
-        return {"message": f"Error al crear el usuario: {str(e)}"}
-
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al registrar usuario", exception=e)
+    
 # Obtener listado de usuarios de la db
 @user.get("", name="Obtener todos los usuarios de la bd")
 async def getUsers(request: Request):
@@ -51,11 +54,11 @@ async def getUsers(request: Request):
     await authService.verifyAdmin(request) 
     # Obtengo todos los registros de la tabla "users" de la bd
     result = conn.execute(users.select()).fetchall()
-    if not result:
+    if result:
         # Si no se encuentran usuarios, devuelve una respuesta vacía con el código de estado 204
-        return JSONResponse(content=[], status_code=204)
-    data = []
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, content={})
     # En la lista data acumulo todos los usuarios en forma de diccionario
+    data = []
     for user in result:
         newUser = {
             "id": user[0],
@@ -66,18 +69,20 @@ async def getUsers(request: Request):
         }
         data.append(newUser)
     # Convierte la lista de diccionarios en formato JSON
-    json = jsonable_encoder(data)
-    return JSONResponse(content=json)
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
 # Obtener un usuario por path ".../user/id"
 @user.get("/get/{id}", name="Obtener un usuario por su id")
 async def getUser(id: int, request: Request):
     # Verifico si el usuario que quiere realizar la operación es administrador
-    await authService.verifyAdmin(request)
+    response = await authService.verifyAdmin(request)
+    if response:
+        return response
     # Busca un usuario por su ID
     result = userService.searchUserById(id)
     if not result:
-        raise HTTPException(status_code=204)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Usuario no encontrado")
+
     # Creo un diccionario con los datos del usuario encontrado
     data = {
         "id": result[0],
@@ -87,8 +92,7 @@ async def getUser(id: int, request: Request):
         "role": result[5]
     }
     # Convierte el diccionario en formato JSON
-    json = jsonable_encoder(data)
-    return JSONResponse(content=json)
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
 # Obtengo los datos del usuario 
 @user.get("/me", name="Perfil usuario")
@@ -102,8 +106,7 @@ async def disableUser(id: int, request: Request):
     # Busca un usuario por su ID
     result = userService.searchUserById(id)
     if not result:
-        # Si no se encuentra ningún usuario, se lanza una excepción HTTP con el código de estado 204
-        return {"message": "Usuario no encontrado"}
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Usuario no encontrado")
     try:
         query = users.update().where(users.c.id == id).values(disabled_at=datetime.now())
         result = conn.execute(query)

@@ -7,7 +7,7 @@ from services import userService
 from schemas import user
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-import main
+from utils import customResponses
 
 
 ALGORITHM = "HS256"
@@ -39,14 +39,10 @@ async def auth_user(request: Request):
     try:
         scheme, token = request.headers.get("Authorization").split()
     except AttributeError:
-        content = {"detail": "Token vacío"}
-        status_code = status.HTTP_400_BAD_REQUEST
-        response = JSONResponse(content=content, status_code=status_code)
+        response = customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail = "Token vacío")
         return None, response
-
-    content = {"detail": "Credenciales de autenticación inválidas"}
-    status_code=status.HTTP_401_UNAUTHORIZED
-    response = JSONResponse(content=content, status_code=status_code)
+    
+    response = customResponses.JsonEmitter.response(status.HTTP_401_UNAUTHORIZED, detail = "Credenciales de autenticación inválidas")
 
     try:
         user = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
@@ -72,13 +68,15 @@ async def current_user(request):
         "username": userDB[2],
         "role": userDB[5]
     }
-    data = jsonable_encoder(content)
-    return JSONResponse(content=data, status_code=status.HTTP_200_OK)
+    response = customResponses.JsonEmitter.response(status.HTTP_200_OK, content=content)
+    return response
 
 async def verifyAdmin(request):
     role = request.state.user.get("role")
     if role != "admin":
-        raise HTTPException(detail="No cuentas con los permisos para ejecutar esta acción", status_code=status.HTTP_401_UNAUTHORIZED)
+        return customResponses.JsonEmitter.response(status.HTTP_401_UNAUTHORIZED, detail="No cuentas con los permisos para ejecutar esta acción")
+    return None
+        
 
     
 

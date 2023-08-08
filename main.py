@@ -8,6 +8,7 @@ app = FastAPI()
 
 #NOTAS
 # Revisar photo upload
+# case: devolver http 400 al enviar una llave foránea inexistente
 
 async def auth_middleware(request: Request, call_next):
     current_path = request.url.path

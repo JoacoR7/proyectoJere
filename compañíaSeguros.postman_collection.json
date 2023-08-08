@@ -160,7 +160,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTExOTQ1MzcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.bJlvRKBmeklE9DqMPaPlNsO4QUpIWx34CAR140Y__fY",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTE0NjEzNTIsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.mf9F0f20bJneW5P4DpHUcvqvQ6MLgvZ2-S--LaSjfso",
 									"type": "string"
 								}
 							]
@@ -169,7 +169,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"user_id\": \"1\",\r\n    \"business_id\": \"2\",\r\n    \"vehicle_id\": \"1\",\r\n    \"accident_number\": \"1\",\r\n    \"policy\": \"string\",\r\n    \"insured_name\": \"name\",\r\n    \"insured_dni\": \"dni\",\r\n    \"insured_phone\": \"phone\",\r\n    \"accident_place\": \"mendoza\",\r\n    \"thef_type\": \"partial\"\r\n}",
+							"raw": "{\r\n    \"user_id\": \"1\",\r\n    \"business_id\": \"2\",\r\n    \"vehicle_id\": \"1\",\r\n    \"accident_number\": \"1\",\r\n    \"policy\": \"string\",\r\n    \"insured_name\": \"name\",\r\n    \"insured_dni\": \"dni\",\r\n    \"insured_phone\": \"phone\",\r\n    \"accident_place\": \"mendoza\",\r\n    \"thef_type\": \"partial\",\r\n    \"finished_at\": null,\r\n    \"accident_date\": null,\r\n    \"dropped\": null\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -177,12 +177,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/case/create",
+							"raw": "http://154.56.43.195/case/create",
 							"protocol": "http",
 							"host": [
-								"localhost"
+								"154",
+								"56",
+								"43",
+								"195"
 							],
-							"port": "8000",
 							"path": [
 								"case",
 								"create"
@@ -385,7 +387,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"str\",\r\n    \"username\": \"s\",\r\n    \"password\": \"str\",\r\n    \"role\": \"operator\"\r\n}",
+							"raw": "{\r\n    \"name\": \"str\",\r\n    \"username\": \"sa\",\r\n    \"password\": \"str\",\r\n    \"role\": \"operator\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -415,7 +417,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTA4NTEyMjEsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.bZQ_WpYSLwuyANZhcX-uTAibGvSP9SjUhWizx8jZVvI",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTE1MjcwNjcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.X99way-768dZMwsoGyYxoISbe-X_Ekx36-MIr4VHM1w",
 									"type": "string"
 								}
 							]
@@ -445,7 +447,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTEwMTAxMjksInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.4QX8jKjj3K6q0NI6fVHfrfbDBFYeTWHY-pqK8rpj_zg",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTE1MjcwNjcsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.X99way-768dZMwsoGyYxoISbe-X_Ekx36-MIr4VHM1w",
 									"type": "string"
 								}
 							]
@@ -476,7 +478,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTEwMTAxMjksInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.4QX8jKjj3K6q0NI6fVHfrfbDBFYeTWHY-pqK8rpj_zg",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiSm9hY28iLCJleHAiOjE2OTE1MjY0NzAsInJvbGUiOiJhZG1pbiIsImlkIjoxfQ.9ab-Z_x69F6jLfxa4c3ycqKLsV7Rb4EDQ51dsf2NCqs",
 									"type": "string"
 								}
 							]
