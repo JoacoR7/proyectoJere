@@ -54,7 +54,7 @@ async def getUsers(request: Request):
     await authService.verifyAdmin(request) 
     # Obtengo todos los registros de la tabla "users" de la bd
     result = conn.execute(users.select()).fetchall()
-    if result:
+    if not result:
         # Si no se encuentran usuarios, devuelve una respuesta vacía con el código de estado 204
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, content={})
     # En la lista data acumulo todos los usuarios en forma de diccionario
