@@ -8,6 +8,7 @@ from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify
 from sqlalchemy import exc, desc
 from services import businessService, caseService, userService, vehicleService
 from datetime import datetime
+from utils import customResponses
 
 case = APIRouter()
 
@@ -67,43 +68,41 @@ async def readCase(id: int):
 async def getCases():
     query = caseModel.select().order_by(desc(caseModel.c.created_at))
     results = conn.execute(query).fetchall()
-    cases = {}
-    for index, result in enumerate(results):
+    cases = []
+    for result in results:
         case = caseService.caseJSON(result[1], result[2], result[3], result[0],
         result[4], result[5], result[6], result[7], result[8], result[9],
         result[10], result[11], result[12], result[13], result[14])
-        cases[index] = case
-    json = jsonable_encoder(cases)
-    return JSONResponse(content=json)
+        cases.append(case)
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=cases)
 
 # Borrar caso
 @case.delete("/{id}", name="Borrar caso")
 async def deleteCase(id: int):
     result = caseService.searchCaseById(id)
     if not result:
-        raise HTTPException(status_code=status.HTTP_404_BAD_REQUEST, detail="Caso no encontrado")
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
     try:
         query = caseModel.delete().where(caseModel.c.id == id)
         result = conn.execute(query)
     except:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Error al eliminar el caso")
     conn.commit()
-    return {"message": "Caso eliminado exitosamente"}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso eliminado exitosamente")
 
 
 @case.put("/dropCase/{id}", name="Tirar caso")
 async def changeCompanyName(id: int):
     result = caseService.searchCaseById(id)
     if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
     try:
         query = caseModel.update().where(caseModel.c.id == id).values(dropped=True)
         result = conn.execute(query)
     except:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al abandonar caso")
     conn.commit()
-    return {"message": "Caso abandonado exitosamente"} 
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso abandonado exitosamente")
 
 @case.post("/validate")
 async def validateToken(caseAccess: AccessToken):
@@ -114,19 +113,17 @@ async def validateToken(caseAccess: AccessToken):
     result = conn.execute(query).first()"""
     if str(case.get("caseId")) != caseAccess.case_id:
         content = {"is_valid": False, "detail": "Token válido, pero id de caso no coincide"}
-        status_code=status.HTTP_200_OK
-        response = JSONResponse(content=content, status_code=status_code)
+        response = customResponses.JsonEmitter.response(status.HTTP_200_OK, content=content)
     else:
         content = {"is_valid": True, "detail": "Token válido"}
-        status_code=status.HTTP_200_OK
-        response = JSONResponse(content=content, status_code=status_code)
+        response = customResponses.JsonEmitter.response(status.HTTP_200_OK, content=content)
     return response
 
 @case.post("/expire")
 async def modifyAccessToken(accessToken: AccessTokenModify):
     case = caseService.searchAccessToken(accessToken.case_access_token)
     if not case:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token de acceso no encontrado")
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Token de acceso no encontrado")
     access_token, exp = caseService.generateToken(datetime.now(), case[0], accessToken.hour_from_now*60)
     updateData = {
         "access_token": access_token,
@@ -137,15 +134,15 @@ async def modifyAccessToken(accessToken: AccessTokenModify):
         conn.execute(query)
         conn.commit()
     except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="No se pudo expirar el caso")
     
-    return {"message": "Token actualizado exitosamente"}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Token actualizado exitosamente")
 
 @case.patch("/update/{id}")
 async def modifyCase(case: CaseModify, id: int):
     caseToUpdate = caseService.searchCaseById(id)
     if not caseToUpdate:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="El caso no existe")
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="El caso no existe")
     updateData = {}
     if case.user_id != None:
         updateData["user_id"] = case.user_id
@@ -183,4 +180,4 @@ async def modifyCase(case: CaseModify, id: int):
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     
-    return {"message": "Caso actualizado exitosamente"}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso editado exitosamente")
