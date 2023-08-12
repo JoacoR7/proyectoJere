@@ -2,6 +2,15 @@
 env.py
 gunicorn_start
 logs/
-*.pyc
 *.pyo
 *.pyc
+__pycache__/main.cpython-311.pyc
+routers/__pycache__/cases.cpython-311.pyc
+routers/__pycache__/images.cpython-311.pyc
+routers/__pycache__/users.cpython-311.pyc
+routers/__pycache__/vehicles.cpython-311.pyc
+schemas/__pycache__/case.cpython-311.pyc
+schemas/__pycache__/image.cpython-311.pyc
+services/__pycache__/authService.cpython-311.pyc
+services/__pycache__/userService.cpython-311.pyc
+services/__pycache__/vehicleService.cpython-311.pyc

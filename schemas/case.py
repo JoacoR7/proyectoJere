@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime
 
 class Case(BaseModel):
-    user_id: int
     business_id: int
     vehicle_id: int
     accident_number: int
