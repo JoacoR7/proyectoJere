@@ -1,12 +1,10 @@
-from fastapi import APIRouter, HTTPException, status, Header
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, status, Request
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
 from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify
 from sqlalchemy import exc, desc
-from services import businessService, caseService, userService, vehicleService
+from services import caseService
 from datetime import datetime
 from utils import customResponses
 
@@ -20,11 +18,12 @@ R: readCase
 
 # Crear caso
 @case.post("/create")
-async def createCase(case: Case):
+async def createCase(case: Case, request: Request):
     # Realizo la query para crear el caso con los valores correspondientes
+    userId = request.state.user.get("id")
     createdAt = datetime.now()
     newCase = caseModel.insert().values(
-        user_id=case.user_id,
+        user_id=userId,
         business_id=case.business_id,
         vehicle_id=case.vehicle_id,
         accident_number = case.accident_number,
@@ -44,10 +43,11 @@ async def createCase(case: Case):
         result = conn.execute(newCase)
         caseService.createAccessToken(createdAt, result.lastrowid)
         conn.commit()  # Confirmar la transacción
-        return {"message": "Caso creado exitosamente"}
-    except exc.SQLAlchemyError as e:
+        return customResponses.JsonEmitter.response(status.HTTP_201_CREATED, detail="Caso creado exitosamente")
+    except exc.SQLAlchemyError as exception:
         conn.rollback()  # Revertir la transacción en caso de error
-        return {"message": f"Error al crear el caso: {str(e)}"}
+        sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}", exception=exception)
 
 # Obtengo la información del caso según su id (y si existe)
 @case.get("/get/{id}")
@@ -55,14 +55,13 @@ async def readCase(id: int):
     # Busca un caso por su ID
     result = caseService.searchCaseById(id)
     if not result:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="El caso no existe")
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="El caso no existe")
     # Creo un diccionario con los datos del usuario, compañía y vehículo correspondiente
     data = caseService.caseJSON(result[1], result[2], result[3], result[0],
         result[4], result[5], result[6], result[7], result[8], result[9],
         result[10], result[11], result[12], result[13], result[14])
     # Convierte el diccionario en formato JSON
-    json = jsonable_encoder(data)
-    return JSONResponse(content=json)
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
 @case.get("/all")
 async def getCases():
@@ -86,7 +85,7 @@ async def deleteCase(id: int):
         query = caseModel.delete().where(caseModel.c.id == id)
         result = conn.execute(query)
     except:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Error al eliminar el caso")
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al eliminar el caso")  
     conn.commit()
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso eliminado exitosamente")
 
@@ -169,15 +168,21 @@ async def modifyCase(case: CaseModify, id: int):
     if case.accident_place != None:
         updateData["accident_place"] = case.accident_place
     if case.thef_type != None:
-        thefType = ["partial", "inner", "outside"]
-        if case.thef_type not in thefType:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tipo de robo incorrecto")
         updateData["thef_type"] = case.thef_type
     try:
         query = caseModel.update().where(caseModel.c.id == id).values(**updateData)
         conn.execute(query)
         conn.commit()
+    except exc.DataError as exception:
+        conn.rollback()
+        sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}: tipo de robo incorrecto", exception=exception)
+    except exc.IntegrityError as exception:
+        conn.rollback()
+        sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}: llave foránea inexistente", exception=exception)
     except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-    
+        conn.rollback()
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="No se pudo actualizar el caso")
+
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso editado exitosamente")

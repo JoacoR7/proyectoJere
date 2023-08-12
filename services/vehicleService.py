@@ -31,8 +31,8 @@ def vehicleJSON(id=None, result = None):
         "id": result[0],
         "brand": result[1],
         "model": result[2],
-        "licence_plate": result[3]
-
+        "licence_plate": result[3],
+        "type": result[4]
     }
 
     return vehicle

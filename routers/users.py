@@ -1,14 +1,11 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Header, Request
+from fastapi import APIRouter, status, Request
 from configuration.db import conn
 from models.user import users
 from schemas.user import User, UserLogin, UserUpdate
 from sqlalchemy import exc
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
 from services import authService, userService
 from passlib.context import CryptContext
 from datetime import datetime
-from typing import Optional
 from utils import customResponses
 
 user = APIRouter()
@@ -51,7 +48,9 @@ async def createUser(user: User):
 @user.get("", name="Obtener todos los usuarios de la bd")
 async def getUsers(request: Request):
     # Verifico si el usuario que quiere realizar la operación es administrador
-    await authService.verifyAdmin(request) 
+    response = await authService.verifyAdmin(request)
+    if response:
+        return response
     # Obtengo todos los registros de la tabla "users" de la bd
     result = conn.execute(users.select()).fetchall()
     if not result:
@@ -102,7 +101,9 @@ async def me(request: Request):
 @user.patch("/disable/{id}", name="Deshabilitar usuario")
 async def disableUser(id: int, request: Request):
     # Verifico si el usuario que quiere realizar la operación es administrador
-    await authService.verifyAdmin(request)
+    response = await authService.verifyAdmin(request)
+    if response:
+        return response
     # Busca un usuario por su ID
     result = userService.searchUserById(id)
     if not result:
@@ -111,26 +112,26 @@ async def disableUser(id: int, request: Request):
         query = users.update().where(users.c.id == id).values(disabled_at=datetime.now())
         result = conn.execute(query)
     except:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al deshabilitar el usuario")
     conn.commit()
-    return {"message": "Usuario deshabilitado exitosamente"}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Usuario deshabilitado exitosamente")
 
 @user.patch("/enable/{id}", name="Habilitar usuario")
 async def enableUser(id: int, request: Request):
     # Verifico si el usuario que quiere realizar la operación es administrador
-    await authService.verifyAdmin(request)
+    response = await authService.verifyAdmin(request)
+    if response:
+        return response
     result = userService.searchUserById(id)
     if not result:
-        return {"message": "Usuario no encontrado"}
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     try:
         query = users.update().where(users.c.id == id).values(disabled_at=None)
         result = conn.execute(query)
     except:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al habilitar el usuario")
     conn.commit()
-    return {"message": "Usuario habilitado exitosamente"}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Usuario habilitado exitosamente")
 
 # Login de usuario
 @user.post("/login", name="Login usuario")
@@ -139,49 +140,52 @@ async def login(user: UserLogin):
     userDB = userService.searchUserByUserName(user.username)
     # Si no existe, devuelvo error
     if not userDB:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario no es correcto")
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El usuario no es correcto")
 
     # Si existe, pero la contraseña es incorrecta, devuelvo error
     if not crypt.verify(user.password, userDB.password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="La contraseña no es correcta")
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="La contraseña no es correcta")
     
     # Si existe, y la contraseña es correcta, devuelvo el token que 
     # tendrá la info del nombre de usuario, rol, id y expiración
     access_token  = authService.accesToken(userDB.username, userDB.role, userDB.id)
-    return {"access_token": access_token, "token_type": "bearer"}
+    data = {"access_token": access_token, "token_type": "bearer"}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
 @user.patch("/update/{id}")
 async def updateUser(id, userUpdate: UserUpdate, request: Request):
     usuario = userService.searchUserById(id)
     if not usuario:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Usuario no encontrado")
     updateData = {}
     if userUpdate.name != None:
         updateData["name"] = userUpdate.name
     if userUpdate.username != None:
         userDB = userService.searchUserByUserName(userUpdate.username)
         if userDB != None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El nombre de usuario ya se encuentra en uso")
+            return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El nombre de usuario ya se encuentra en uso")
         updateData["username"] = userUpdate.username
     if userUpdate.password != None:
         newPass = authService.hashPass(userUpdate.password)
         updateData["password"] = newPass
     if userUpdate.role != None:
-        await authService.verifyAdmin(request)
-        if userUpdate.role != "admin" and userUpdate.role != "operator":
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Rol incorrecto")
+        response = await authService.verifyAdmin(request)
+        if response:
+            return response
         updateData["role"] = userUpdate.role
-    
     try:
         query = users.update().where(users.c.id == id).values(**updateData)
         conn.execute(query)
         conn.commit()
+    except exc.DataError as exception:
+        conn.rollback()
+        sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}: rol de usuario incorrecto", exception=exception)
     except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+        conn.rollback()
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al actualizar usuario")
     
-    return {"message": "Usuario actualizado exitosamente"}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Usuario actualizado exitosamente")
     
         
         

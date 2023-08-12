@@ -1,8 +1,6 @@
 from models.user import users
 from configuration.db import conn
 from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-from fastapi import Header
 
 #Buscar usuario por id
 def searchUserById(id: int):

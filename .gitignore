@@ -4,3 +4,4 @@ gunicorn_start
 logs/
 *.pyc
 *.pyo
+*.pyc

@@ -37,7 +37,7 @@ def accesToken(username: str, role: str, id: int):
 # Verifico que el token otorgado sea correcto o válido (que no haya expirado)
 async def auth_user(request: Request):
     try:
-        scheme, token = request.headers.get("Authorization").split()
+        _, token = request.headers.get("Authorization").split()
     except AttributeError:
         response = customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail = "Token vacío")
         return None, response
@@ -54,10 +54,8 @@ async def auth_user(request: Request):
 
     return user, None
 
-
 async def current_user(request):
-    user = request.state.user
-    id = user.get("id")
+    id = request.state.user.get("id")
     userDB = userService.searchUserById(id)
     if userDB[4] != None:
         raise HTTPException(
@@ -75,7 +73,11 @@ async def verifyAdmin(request):
     role = request.state.user.get("role")
     if role != "admin":
         return customResponses.JsonEmitter.response(status.HTTP_401_UNAUTHORIZED, detail="No cuentas con los permisos para ejecutar esta acción")
-    return None
+
+async def isEnabled(request):
+    user = userService.searchUserById(request.state.user.get("id"))
+    if user[4] != None:
+        return customResponses.JsonEmitter.response(status.HTTP_401_UNAUTHORIZED, detail="Usuario deshabilitado")
         
 
     

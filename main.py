@@ -23,6 +23,9 @@ async def auth_middleware(request: Request, call_next):
         if(user == None):
             return response
         request.state.user = user
+        response = await authService.isEnabled(request)
+        if(response != None):
+            return response
         response = await call_next(request)
         return response
 
