@@ -104,7 +104,7 @@ def upgrade() -> None:
     sa.Column('validation_attemps', mysql.INTEGER(), autoincrement=False, nullable=False),
     sa.Column('metadata', mysql.VARCHAR(length=150), nullable=True),
     sa.Column('type', mysql.VARCHAR(length=150), nullable=False),
-    sa.ForeignKeyConstraint(['case_id'], ['cases.id'], name='cases_ibfk_1'),
+    sa.ForeignKeyConstraint(['case_id'], ['cases.id'], name='case_photo_ibfk_1'),
     sa.PrimaryKeyConstraint('id'),
     mysql_collate='utf8mb4_0900_ai_ci',
     mysql_default_charset='utf8mb4',
