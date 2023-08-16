@@ -1,11 +1,12 @@
 from fastapi import APIRouter, status, Request
+from fastapi.encoders import jsonable_encoder
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
 from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify
 from sqlalchemy import exc, desc
 from services import caseService
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils import customResponses
 
 case = APIRouter()
@@ -25,7 +26,7 @@ async def createCase(case: Case, request: Request):
     newCase = caseModel.insert().values(
         user_id=userId,
         business_id=case.business_id,
-        vehicle_id=case.vehicle_id,
+        vehicle=jsonable_encoder(case.vehicle),
         accident_number = case.accident_number,
         created_at=createdAt,
         finished_at=case.finished_at,
@@ -37,13 +38,15 @@ async def createCase(case: Case, request: Request):
         accident_date=case.accident_date,
         accident_place=case.accident_place,
         thef_type=case.thef_type
-
     )
     try:
         result = conn.execute(newCase)
-        caseService.createAccessToken(createdAt, result.lastrowid)
+        accessToken = caseService.createAccessToken(createdAt, result.lastrowid)
         conn.commit()  # Confirmar la transacción
-        return customResponses.JsonEmitter.response(status.HTTP_201_CREATED, detail="Caso creado exitosamente")
+        data = {"detail": "Caso creado exitosamente",
+                "case_id": result.lastrowid,
+                "case_access_token": accessToken}
+        return customResponses.JsonEmitter.response(status.HTTP_201_CREATED, content=data)
     except exc.SQLAlchemyError as exception:
         conn.rollback()  # Revertir la transacción en caso de error
         sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
@@ -123,11 +126,11 @@ async def modifyAccessToken(accessToken: AccessTokenModify):
     case = caseService.searchAccessToken(accessToken.case_access_token)
     if not case:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Token de acceso no encontrado")
-    access_token, exp = caseService.generateToken(datetime.now(), case[0], accessToken.hour_from_now*60)
+    exp = datetime.now() + timedelta(minutes=accessToken.hour_from_now*60)
     updateData = {
-        "access_token": access_token,
         "due_date": exp
     }
+    
     try:
         query = AccessModel.update().where(AccessModel.c.access_token == accessToken.case_access_token).values(**updateData)
         conn.execute(query)
@@ -135,7 +138,9 @@ async def modifyAccessToken(accessToken: AccessTokenModify):
     except:
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="No se pudo expirar el caso")
     
-    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Token actualizado exitosamente")
+    data = {"detail": "Token actualizado exitosamente",
+            "expiration_date": exp.strftime("%B %d, %Y %I:%M %p")}
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
 @case.patch("/update/{id}")
 async def modifyCase(case: CaseModify, id: int):

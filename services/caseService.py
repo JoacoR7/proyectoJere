@@ -1,12 +1,12 @@
 from models.case import case
 from models.caseAccessToken import caseAccessToken as caseAccessModel
 from configuration.db import conn
-from datetime import timedelta
+from datetime import timedelta, datetime
 from jose import jwt, JWTError
 from sqlalchemy import exc
 from fastapi import status
 from fastapi.responses import JSONResponse
-from services import userService, businessService, vehicleService
+from services import userService, businessService, imageService
 
 ALGORITHM = "HS256"
 SECRET = "201d573bd7d1344d3a3bfce1550b69102fd11be3db6d379508b6cccc58ea230b"
@@ -34,7 +34,7 @@ def createAccessToken(creationDate, caseId, time=1440):
     try:
         conn.execute(query)
         conn.commit()  # Confirmar la transacción
-        return 
+        return access_token
     except exc.SQLAlchemyError as e:
         conn.rollback()  # Revertir la transacción en caso de error
         return {"message": f"Error al crear el token: {str(e)}"}
@@ -43,10 +43,13 @@ def verifyAccessToken(accessToken):
     content = {"is_valid": False, "detail": "Token vencido"}
     status_code=status.HTTP_200_OK
     response = JSONResponse(content=content, status_code=status_code)
-
     try:
-        case = jwt.decode(accessToken, SECRET, algorithms=[ALGORITHM])
+        case = jwt.decode(accessToken, SECRET, algorithms=[ALGORITHM], options={"verify_exp": False})
         if case is None:
+            return None, response
+        expDate = case.get("exp")
+        currDate = int(datetime.now().timestamp())
+        if expDate < currDate:
             return None, response
 
     except JWTError:
@@ -59,14 +62,18 @@ def searchAccessToken(accessToken):
     result = conn.execute(query).first()
     return result
 
-def caseJSON(userId, companyId, vehicleId, caseId, accidentNumber, createdAt, finishedAt, dropped,
+def caseJSON(userId, companyId, vehicle, caseId, accidentNumber, createdAt, finishedAt, dropped,
             policy, insuredName, insuredDNI, insuredPhone, accidentDate, accidentPlace, thefType):
     user = userService.userJSON(id=userId)
     business = businessService.businessJSON(id=companyId)
-    vehicle = vehicleService.vehicleJSON(id=vehicleId)
+    images = imageService.getImages(caseId)
+    imagesJSON = []
+    for image in images:
+        imagesJSON.append(imageService.imageJSON(image))
     case = {
         "id": caseId,
         "user": user,
+        "photo": imagesJSON,
         "business": business,
         "vehicle": vehicle,
         "accident_number": accidentNumber,

@@ -1,10 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from schemas import vehicle
 
 class Case(BaseModel):
     business_id: int
-    vehicle_id: int
+    vehicle: vehicle.Vehicle
     accident_number: int
     finished_at: Optional[datetime]
     dropped: Optional[bool]

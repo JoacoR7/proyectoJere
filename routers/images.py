@@ -1,11 +1,11 @@
-from fastapi import APIRouter, File
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, status
 from schemas.image import Image as imageSchema
 from models.image import image as imageModel
 from configuration.db import conn
 from sqlalchemy import exc
-from io import BytesIO
-from PIL import Image
+import base64
+from utils import customResponses
+
 
 image = APIRouter()
 
@@ -16,38 +16,31 @@ R: getImage
 """
 
 @image.post("/upload")
-def upload(photo: imageSchema, newPhoto: bytes = File(...)):
-    print(photo)
+def upload(newPhoto: imageSchema):
+    if newPhoto.validation_attemps == 3:
+        validated = False
+    else:
+        validated = True
+
+    # Convierto la imagen de Base64 a bytes
+    blob = base64.b64decode(newPhoto.photo)
+
     query = imageModel.insert().values(
-        photo=newPhoto,
-        case_id=photo.case_id,
-        validated=photo.validated,
-        validation_attemps=photo.validation_attemps,
-        metadata=photo.metadata
+        photo=blob,
+        case_id=newPhoto.case_id,
+        validated = validated,
+        validation_attemps=newPhoto.validation_attemps,
+        metadata=newPhoto.metadata,
+        type=newPhoto.type
     )
     try:
         result = conn.execute(query)
         conn.commit() # Confirmar la transacción
-        return {"message": "Imagen guardada exitosamente"}
+        return customResponses.JsonEmitter.response(status.HTTP_201_CREATED, detail="Imagen guardada exitosamente")
     except exc.SQLAlchemyError as e:
         conn.rollback() # Revertir la transacción en caso de error
-        return {"message": f"Error al guardar la imagen: {str(e)}"}
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"Error al guardar la imagen: {str(e)}")
 
 @image.get("/{id}")
 def getImage(id:int):
-    # Consultar la imagen en la base de datos
-    query = imageModel.select().where(imageModel.c.id == id)
-    result = conn.execute(query).fetchone()
-    if result is None:
-        return {"message": "Imagen no encontrada"}
-
-    image_data = result[1]
-    img = Image.open(BytesIO(image_data))
-
-    # Convertir la imagen a formato JPEG y guardarla en un búfer
-    buffer = BytesIO()
-    img.save(buffer, format="JPEG")
-    buffer.seek(0)
-
-    # Devolver la imagen como respuesta HTTP
-    return StreamingResponse(buffer, media_type="image/jpeg")
+    return

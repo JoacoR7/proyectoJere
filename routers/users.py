@@ -142,9 +142,16 @@ async def login(user: UserLogin):
     if not userDB:
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El usuario no es correcto")
 
+    print(userDB)
+
     # Si existe, pero la contraseña es incorrecta, devuelvo error
     if not crypt.verify(user.password, userDB.password):
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="La contraseña no es correcta")
+    
+    # Si existe, pero está deshabilitado, no lo dejo entrar
+    # "You shall not pass" (Gandalf, 3019)
+    if userDB[4] != None:
+        return customResponses.JsonEmitter.response(status.HTTP_401_UNAUTHORIZED, detail="Usuario deshabilitado")
     
     # Si existe, y la contraseña es correcta, devuelvo el token que 
     # tendrá la info del nombre de usuario, rol, id y expiración
