@@ -1,11 +1,10 @@
 from fastapi import APIRouter, status, Request
-from fastapi.encoders import jsonable_encoder
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
 from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify
 from sqlalchemy import exc, desc
-from services import caseService
+from services import caseService, vehicleService
 from datetime import datetime, timedelta
 from utils import customResponses
 
@@ -23,10 +22,13 @@ async def createCase(case: Case, request: Request):
     # Realizo la query para crear el caso con los valores correspondientes
     userId = request.state.user.get("id")
     createdAt = datetime.now()
+    vehicleId, response = vehicleService.createVehicle(case.vehicle)
+    if not vehicleId:
+        return response
     newCase = caseModel.insert().values(
         user_id=userId,
         business_id=case.business_id,
-        vehicle=jsonable_encoder(case.vehicle),
+        vehicle_id=vehicleId,
         accident_number = case.accident_number,
         created_at=createdAt,
         finished_at=case.finished_at,
@@ -42,16 +44,17 @@ async def createCase(case: Case, request: Request):
     try:
         result = conn.execute(newCase)
         accessToken = caseService.createAccessToken(createdAt, result.lastrowid)
-        conn.commit()  # Confirmar la transacción
+        # Confirmar la transacción
         data = {"detail": "Caso creado exitosamente",
                 "case_id": result.lastrowid,
                 "case_access_token": accessToken}
+        conn.commit()
         return customResponses.JsonEmitter.response(status.HTTP_201_CREATED, content=data)
     except exc.SQLAlchemyError as exception:
         conn.rollback()  # Revertir la transacción en caso de error
         sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}", exception=exception)
-
+    
 # Obtengo la información del caso según su id (y si existe)
 @case.get("/get/{id}")
 async def readCase(id: int):

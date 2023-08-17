@@ -1,8 +1,8 @@
-import re
 from models.vehicle import vehicle
 from configuration.db import conn
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
+from utils import customResponses
+from fastapi import status
+from sqlalchemy import exc
 
 """def verificarPatente(patente):
     formato1 = r'^[A-Z]{3}\s\d{3}$'
@@ -34,6 +34,28 @@ def vehicleJSON(id=None, result = None):
         "licence_plate": result[3],
         "type": result[4]
     }
-
     return vehicle
+
+def createVehicle(newVehicle):
+    patente = newVehicle.licence_plate.upper()
+    """if not vehicleService.verificarPatente(patente):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No se respeta el formato de patente")"""
+    query = vehicle.insert().values(
+        brand=newVehicle.brand,
+        model=newVehicle.model,
+        licence_plate=patente,
+        type=newVehicle.type
+    )
+    try:
+        result = conn.execute(query)
+        # Confirmar la transacción
+        id = result.lastrowid
+        return id, None
+    except exc.DataError as exception:
+
+        sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
+        return None, customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}: tipo de vehículo incorrecto", exception=exception)
+    except exc.SQLAlchemyError as e:
+        # Revertir la transacción en caso de error
+        return None, customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"Error al guardar el vehículo: {str(e)}")
     

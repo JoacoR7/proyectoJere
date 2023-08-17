@@ -7,3 +7,9 @@ class Vehicle(BaseModel):
     model: str
     licence_plate: str
     type: str
+
+class VehicleUpdate(BaseModel):
+    brand: Optional[str]
+    model: Optional[str]
+    licence_plate: Optional[str]
+    type: Optional[str]
