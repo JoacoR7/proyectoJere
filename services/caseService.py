@@ -6,7 +6,7 @@ from jose import jwt, JWTError
 from sqlalchemy import exc
 from fastapi import status
 from fastapi.responses import JSONResponse
-from services import userService, businessService, imageService
+from services import userService, businessService, imageService, vehicleService
 
 ALGORITHM = "HS256"
 SECRET = "201d573bd7d1344d3a3bfce1550b69102fd11be3db6d379508b6cccc58ea230b"
@@ -67,6 +67,7 @@ def caseJSON(userId, companyId, vehicle, caseId, accidentNumber, createdAt, fini
     user = userService.userJSON(id=userId)
     business = businessService.businessJSON(id=companyId)
     images = imageService.getImages(caseId)
+    vehicle = vehicleService.vehicleJSON(id=vehicle)
     imagesJSON = []
     for image in images:
         imagesJSON.append(imageService.imageJSON(image))
