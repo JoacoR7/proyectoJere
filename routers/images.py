@@ -5,6 +5,7 @@ from configuration.db import conn
 from sqlalchemy import exc
 import base64
 from utils import customResponses
+from services import imageService
 
 
 image = APIRouter()
@@ -43,4 +44,9 @@ def upload(newPhoto: imageSchema):
 
 @image.get("/{id}")
 def getImage(id:int):
-    return
+    query = imageModel.select().where(imageModel.c.id == id)
+    result = conn.execute(query).first()
+    if not result:
+        return customResponses.JsonEmitter.response(status=status.HTTP_404_NOT_FOUND, detail="Imagen no encontrada")
+    image = imageService.imageJSON(result)
+    return customResponses.JsonEmitter.response(status=status.HTTP_200_OK, content=image)
