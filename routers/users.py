@@ -169,8 +169,8 @@ async def updateUser(id, userUpdate: UserUpdate, request: Request):
         updateData["name"] = userUpdate.name
     if userUpdate.username != None:
         userDB = userService.searchUserByUserName(userUpdate.username)
-        if userDB != None and userDB[0] != id:
-            return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El nombre de usuario ya se encuentra en uso")
+        if userDB != None and str(userDB[0]) != str(id):
+            return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El nombre de usuario ya se encuentra en uso",content=userDB)
         updateData["username"] = userUpdate.username
     if userUpdate.password != None:
         newPass = authService.hashPass(userUpdate.password)
