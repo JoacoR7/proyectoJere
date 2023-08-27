@@ -114,11 +114,10 @@ async def validateToken(caseAccess: AccessToken):
     case, response = caseService.verifyAccessToken(caseAccess.case_access_token)
     if case == None:
         return response
-    """query = AccessModel.select().where(AccessModel.c.access_token == caseAccess.case_access_token)
-    result = conn.execute(query).first()"""
+
     if str(case.get("caseId")) != caseAccess.case_id:
         content = {"is_valid": False, "detail": "Token válido, pero id de caso no coincide"}
-        response = customResponses.JsonEmitter.response(status.HTTP_200_OK, content=content)
+        response = customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, content=content)
     else:
         content = {"is_valid": True, "detail": "Token válido"}
         response = customResponses.JsonEmitter.response(status.HTTP_200_OK, content=content)
