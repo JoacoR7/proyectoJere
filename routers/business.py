@@ -75,9 +75,9 @@ async def changebusinessName(id: int, business: Business, request: Request):
     result = businessService.searchBusinessById(id)
     if not result:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Compañía no encontrada")
-    result = businessService.searchBusinessByName(business.name)
-    if result:
-        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El nombre de la compañía ya existe")
+    # result = businessService.searchBusinessByName(business.name)
+    # if result:
+    #     return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El nombre de la compañía ya existe")
     try:
         query = businessModel.update().where(businessModel.c.id == id).values(name=business.name,case_dropped_letter=business.case_dropped_letter)
         result = conn.execute(query)
