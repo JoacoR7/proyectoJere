@@ -67,7 +67,7 @@ async def getbusiness(id: int):
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
 @business.patch("/update/{id}", name="Actualizar compañía")
-async def changebusinessName(id: int, business: Business, request: Request):
+async def changebusinessName(id: int, business: BusinessName, request: Request):
     response = await authService.verifyAdmin(request)
     if response:
         return response
@@ -78,7 +78,7 @@ async def changebusinessName(id: int, business: Business, request: Request):
     # if result:
     #     return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El nombre de la compañía ya existe")
     try:
-        query = businessModel.update().where(businessModel.c.id == id).values(name=business.name,case_dropped_letter=business.case_dropped_letter)
+        query = businessModel.update().where(businessModel.c.id == id).values(name=business.name)
         result = conn.execute(query)
     except:
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al cambiar el nombre de compañía")
