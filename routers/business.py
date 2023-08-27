@@ -28,7 +28,8 @@ async def createbusiness(newbusiness: BusinessName, request: Request):
     if newbusiness.name == "":
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Nombre inválido")
     newbusiness = businessModel.insert().values(
-        name=newbusiness.name
+        name=newbusiness.name,
+        case_dropped_letter=""
     )
     try:
         conn.execute(newbusiness)
