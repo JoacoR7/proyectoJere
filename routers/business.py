@@ -20,7 +20,7 @@ D: deletebusiness (borro la compañía)
 
 # Registrar compañía
 @business.post("/create", name="Crear nueva compañía")
-async def createbusiness(newbusiness: Business, request: Request):
+async def createbusiness(newbusiness: BusinessName, request: Request):
     await authService.verifyAdmin(request)
     findbusiness = businessService.searchBusinessByName(newbusiness.name)
     if findbusiness:
