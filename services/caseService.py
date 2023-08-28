@@ -66,15 +66,15 @@ def caseJSON(userId, companyId, vehicle, caseId, accidentNumber, createdAt, fini
             policy, insuredName, insuredDNI, insuredPhone, accidentDate, accidentPlace, thefType):
     user = userService.userJSON(id=userId)
     business = businessService.businessJSON(id=companyId)
-    images = imageService.getImages(caseId)
+    images = True if imageService.getImages(caseId) else False
     vehicle = vehicleService.vehicleJSON(id=vehicle)
     imagesJSON = []
-    for image in images:
-        imagesJSON.append(imageService.imageJSON(image))
+    # for image in images:
+    #     imagesJSON.append(imageService.imageJSON(image))
     case = {
         "id": caseId,
         "user": user,
-        "photo": imagesJSON,
+        "photo": images,
         "business": business,
         "vehicle": vehicle,
         "accident_number": accidentNumber,
