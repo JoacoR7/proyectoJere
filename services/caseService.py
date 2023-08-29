@@ -63,18 +63,20 @@ def searchAccessToken(accessToken):
     return result
 
 def caseJSON(userId, companyId, vehicle, caseId, accidentNumber, createdAt, finishedAt, dropped,
-            policy, insuredName, insuredDNI, insuredPhone, accidentDate, accidentPlace, thefType):
+            policy, insuredName, insuredDNI, insuredPhone, accidentDate, accidentPlace, thefType, showImages = False):
     user = userService.userJSON(id=userId)
     business = businessService.businessJSON(id=companyId)
     images = True if imageService.getImages(caseId) else False
     vehicle = vehicleService.vehicleJSON(id=vehicle)
     imagesJSON = []
-    # for image in images:
-    #     imagesJSON.append(imageService.imageJSON(image))
+    if showImages:
+        images = imageService.getImages(caseId)
+        for image in images:
+            imagesJSON.append(imageService.imageJSON(image))
     case = {
         "id": caseId,
         "user": user,
-        "photo": images,
+        "photo": imagesJSON if imagesAvailable else images,
         "business": business,
         "vehicle": vehicle,
         "accident_number": accidentNumber,
