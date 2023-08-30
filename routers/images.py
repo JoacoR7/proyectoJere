@@ -5,7 +5,7 @@ from configuration.db import conn
 from sqlalchemy import exc
 import base64
 from utils import customResponses
-from services import imageService
+from services import imageService, caseService
 
 
 image = APIRouter()
@@ -22,6 +22,11 @@ def upload(newPhoto: imageSchema):
         validated = False
     else:
         validated = True
+
+    caseId = newPhoto.case_id
+    result = caseService.searchCaseById(caseId)
+    if not result:
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
 
     # Convierto la imagen de Base64 a bytes
     blob = base64.b64decode(newPhoto.photo)
