@@ -6,7 +6,7 @@ from schemas import vehicle
 class Case(BaseModel):
     business_id: int
     vehicle: vehicle.Vehicle
-    accident_number: int
+    accident_number: str
     finished_at: Optional[datetime]
     dropped: Optional[bool]
     policy: Optional[str]
@@ -19,9 +19,9 @@ class Case(BaseModel):
 
 class CaseModify(BaseModel):
     user_id: Optional[int]
-    business_id: Optional[int]
+    vehicle: Optional[vehicle.Vehicle]
     vehicle_id: Optional[int]
-    accident_number: Optional[int]
+    accident_number: Optional[str]
     finished_at: Optional[datetime]
     dropped: Optional[bool]
     policy: Optional[str]
@@ -31,6 +31,9 @@ class CaseModify(BaseModel):
     accident_date: Optional[datetime]
     accident_place: Optional[str]
     thef_type: Optional[str]    
+
+class CaseDrop(BaseModel):
+    case_id: int
 
 class AccessToken(BaseModel):
     case_access_token: str

@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Request
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
-from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify
+from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify, CaseDrop
 from sqlalchemy import exc, desc
 from services import caseService, vehicleService
 from datetime import datetime, timedelta
@@ -70,8 +70,13 @@ async def readCase(id: int):
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
 @case.get("/all")
-async def getCases():
-    query = caseModel.select().order_by(desc(caseModel.c.created_at))
+async def getCases(request: Request):
+    role = request.state.user.get("role")
+    if role == "admin":
+        query = caseModel.select().order_by(desc(caseModel.c.created_at))
+    else:
+        id = request.state.user.get("id")
+        query = caseModel.select().where(caseModel.c.user_id == id).order_by(desc(caseModel.c.created_at))
     results = conn.execute(query).fetchall()
     cases = []
     for result in results:
@@ -96,15 +101,20 @@ async def deleteCase(id: int):
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso eliminado exitosamente")
 
 
-@case.put("/dropCase/{id}", name="Tirar caso")
-async def changeCompanyName(id: int):
+@case.put("/dropCase", name="Tirar caso")
+async def dropCase(case: CaseDrop): #, request: Request):
+    """role = request.state.user.get("role")
+    if role == "operator":
+        userId = request.state.user.get("id")"""
+    id = case.case_id
     result = caseService.searchCaseById(id)
     if not result:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
     try:
-        query = caseModel.update().where(caseModel.c.id == id).values(dropped=True)
+        query = caseModel.update().where(caseModel.c.id == id).values(dropped=1)
         result = conn.execute(query)
-    except:
+    except exc.SQLAlchemyError as e:
+        print(e)
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al abandonar caso")
     conn.commit()
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso abandonado exitosamente")
@@ -150,17 +160,22 @@ async def modifyCase(case: CaseModify, id: int):
     if not caseToUpdate:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="El caso no existe")
     updateData = {}
+    vehicleId, response = vehicleService.createVehicle(case.vehicle)
+    if response:
+        return customResponses.JsonEmitter.response(status=status.HTTP_400_BAD_REQUEST, detail=response)
     if case.user_id != None:
         updateData["user_id"] = case.user_id
     if case.business_id != None:
         updateData["business_id"] = case.business_id
     if case.vehicle_id != None:
-        updateData["vehicle_id"] = case.vehicle_id
+        updateData["vehicle_id"] = vehicleId
     if case.accident_number != None:
         updateData["accident_number"] = case.accident_number
     if case.finished_at != None:
         updateData["finished_at"] = case.finished_at
     if case.dropped != None:
+        if case.dropped != 1 and case.dropped != 0:
+            return customResponses.JsonEmitter.response(status=status.HTTP_400_BAD_REQUEST, detail="El valor del atributo 'Dropped' debe ser 0 ó 1")
         updateData["dropped"] = case.dropped
     if case.policy != None:
         updateData["policy"] = case.policy

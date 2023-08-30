@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "fe753861-6502-4ee7-83e6-dc0b07a232a3",
+		"_postman_id": "babbb0c0-d3fb-46ec-a8b4-8a51fc02fc1d",
 		"name": "compañíaSeguros",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25524213"
+		"_exporter_id": "26086111"
 	},
 	"item": [
 		{
@@ -416,7 +416,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"adminprueba\",\r\n    \"password\": \"admin\"\r\n}",
+							"raw": "{\r\n    \"username\": \"joacoR\",\r\n    \"password\": \"123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -862,12 +862,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8000/case/update/3",
-							"protocol": "http",
+							"raw": "{{BASE_URL}}/case/update/3",
 							"host": [
-								"localhost"
+								"{{BASE_URL}}"
 							],
-							"port": "8000",
 							"path": [
 								"case",
 								"update",
@@ -900,6 +898,33 @@
 							"path": [
 								"case",
 								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DropCase",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"case_id\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/case/dropCase",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"case",
+								"dropCase"
 							]
 						}
 					},
