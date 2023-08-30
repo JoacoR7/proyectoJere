@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Request
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
-from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify, CaseDrop
+from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify, CaseId
 from sqlalchemy import exc, desc
 from services import caseService, vehicleService
 from datetime import datetime, timedelta
@@ -102,7 +102,7 @@ async def deleteCase(id: int):
 
 
 @case.put("/dropCase", name="Tirar caso")
-async def dropCase(case: CaseDrop): #, request: Request):
+async def dropCase(case: CaseId): #, request: Request):
     """role = request.state.user.get("role")
     if role == "operator":
         userId = request.state.user.get("id")"""
@@ -113,8 +113,7 @@ async def dropCase(case: CaseDrop): #, request: Request):
     try:
         query = caseModel.update().where(caseModel.c.id == id).values(dropped=1)
         result = conn.execute(query)
-    except exc.SQLAlchemyError as e:
-        print(e)
+    except:
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al abandonar caso")
     conn.commit()
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso abandonado exitosamente")
@@ -149,7 +148,6 @@ async def modifyAccessToken(accessToken: AccessTokenModify):
         conn.commit()
     except:
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="No se pudo expirar el caso")
-    
     data = {"detail": "Token actualizado exitosamente",
             "expiration_date": exp.strftime("%B %d, %Y %I:%M %p")}
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
@@ -208,3 +206,17 @@ async def modifyCase(case: CaseModify, id: int):
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="No se pudo actualizar el caso")
 
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso editado exitosamente")
+
+@case.post("/finished")
+def finishCase(case: CaseId):
+    id = case.case_id
+    result = caseService.searchCaseById(id)
+    if not result:
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
+    try:
+        query = caseModel.update().where(caseModel.c.id == id).values(finished_at=datetime.now())
+        result = conn.execute(query)
+    except:
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al finalizar caso")
+    conn.commit()
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso finalizado exitosamente")

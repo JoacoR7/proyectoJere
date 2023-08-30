@@ -32,7 +32,7 @@ class CaseModify(BaseModel):
     accident_place: Optional[str]
     thef_type: Optional[str]    
 
-class CaseDrop(BaseModel):
+class CaseId(BaseModel):
     case_id: int
 
 class AccessToken(BaseModel):
