@@ -47,9 +47,11 @@ def verifyAccessToken(accessToken):
         case = jwt.decode(accessToken, SECRET, algorithms=[ALGORITHM], options={"verify_exp": False})
         if case is None:
             return None, response
-        expDate = case.get("exp")
+
         currDate = int(datetime.now().timestamp())
-        if expDate < currDate:
+        caseDb = searchAccessToken(accessToken)
+
+        if caseDb[2].timestamp() < currDate:
             return None, response
 
     except JWTError:
