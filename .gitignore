@@ -14,3 +14,5 @@ schemas/__pycache__/image.cpython-311.pyc
 services/__pycache__/authService.cpython-311.pyc
 services/__pycache__/userService.cpython-311.pyc
 services/__pycache__/vehicleService.cpython-311.pyc
+env
+requirements2.txt

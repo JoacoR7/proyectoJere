@@ -6,6 +6,11 @@ from sqlalchemy import exc
 import base64
 from utils import customResponses
 from services import imageService, caseService
+from assets.kvalidator_module.kvalidator import (
+    car_validator,
+    dni_extractor
+
+)
 
 
 image = APIRouter()
@@ -18,11 +23,25 @@ R: getImage
 
 @image.post("/upload")
 def upload(newPhoto: imageSchema):
-    if newPhoto.validation_attemps == 3:
+
+    if newPhoto.validation_attemps >= 3:
         validated = False
     else:
-        validated = True
-
+        data = {
+        "data": newPhoto.photo
+        }
+        if(newPhoto.type == "LATERAL_DERECHO" or newPhoto.type == "LATERAL_IZQUIERDO" 
+            or newPhoto.type == "PARTE_FRONTAL" or newPhoto.type == "PARTE_TRASERA" 
+            or newPhoto.type == "RUEDA" or newPhoto.type == "CERRADURA"):
+            validated  =  car_validator(data)
+        elif(newPhoto.type == "DOCUMENTACION_FRONTAL" or newPhoto.type == "DOCUMENTACION_DORSAL"):
+            extracted_data  =  dni_extractor(data)
+            if(extracted_data.get("error") != None):
+                validated = False
+            else:
+                validated = True
+        else:
+            return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Imagen no válida")
     caseId = newPhoto.case_id
     result = caseService.searchCaseById(caseId)
     if not result:
