@@ -51,9 +51,7 @@ def upload(newPhoto: imageSchema):
                 validated = licencia_back_validator(data)
         else:
             return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Imagen no válida")
-    print(extracted_data)
-    print(validated)
-    return None, None
+
     caseId = newPhoto.case_id
     result = caseService.searchCaseById(caseId)
     if not result:
