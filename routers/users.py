@@ -142,8 +142,6 @@ async def login(user: UserLogin):
     if not userDB:
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="El usuario no es correcto")
 
-    print(userDB)
-
     # Si existe, pero la contraseña es incorrecta, devuelvo error
     if not crypt.verify(user.password, userDB.password):
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="La contraseña no es correcta")

@@ -3,7 +3,10 @@ import cv2
 import numpy as np
 import base64
 
-model_path = 'kvalidator/validators/assets/kw4rgs_car_model_v1'
+#Windows
+#model_path = 'utils\\kvalidator\\validators\\assets\\kw4rgs_car_model_v1'
+#Linux
+model_path = 'utils/kvalidator/validators/assets/kw4rgs_car_model_v1'
 
 class CarValidator:
     def __init__(self, model_path: str):

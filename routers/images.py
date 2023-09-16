@@ -6,9 +6,14 @@ from sqlalchemy import exc
 import base64
 from utils import customResponses
 from services import imageService, caseService
-from assets.kvalidator_module.kvalidator import (
+from utils.kvalidator import (
+    cedula_extractor,
+    dni_extractor,
     car_validator,
-    dni_extractor
+    cedula_validator,
+    dni_validator,
+    licencia_front_validator,
+    licencia_back_validator,
 
 )
 
@@ -23,7 +28,6 @@ R: getImage
 
 @image.post("/upload")
 def upload(newPhoto: imageSchema):
-
     if newPhoto.validation_attemps >= 3:
         validated = False
     else:
@@ -35,13 +39,21 @@ def upload(newPhoto: imageSchema):
             or newPhoto.type == "RUEDA" or newPhoto.type == "CERRADURA"):
             validated  =  car_validator(data)
         elif(newPhoto.type == "DOCUMENTACION_FRONTAL" or newPhoto.type == "DOCUMENTACION_DORSAL"):
-            extracted_data  =  dni_extractor(data)
-            if(extracted_data.get("error") != None):
-                validated = False
-            else:
+            if(dni_validator(data)):
+                extracted_data = dni_extractor(data)
                 validated = True
+            elif(cedula_validator(data)):
+                extracted_data = cedula_extractor(data)
+                validated = True
+            elif(licencia_front_validator(data)):
+                validated = True
+            elif(licencia_back_validator(data)):
+                validated = licencia_back_validator(data)
         else:
             return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Imagen no válida")
+    print(extracted_data)
+    print(validated)
+    return None, None
     caseId = newPhoto.case_id
     result = caseService.searchCaseById(caseId)
     if not result:
