@@ -28,30 +28,30 @@ R: getImage
 
 @image.post("/upload")
 def upload(newPhoto: imageSchema):
-    if newPhoto.validation_attemps >= 3:
-        validated = False
-    else:
+    validated = False
+    if newPhoto.validation_attemps<3:
         data = {
         "data": newPhoto.photo
         }
         if(newPhoto.type == "LATERAL_DERECHO" or newPhoto.type == "LATERAL_IZQUIERDO" 
             or newPhoto.type == "PARTE_FRONTAL" or newPhoto.type == "PARTE_TRASERA" 
             or newPhoto.type == "RUEDA" or newPhoto.type == "CERRADURA"):
-            validated  =  car_validator(data)
+            validated  =  car_validator(data).get("is_valid")
         elif(newPhoto.type == "DOCUMENTACION_FRONTAL" or newPhoto.type == "DOCUMENTACION_DORSAL"):
-            if(dni_validator(data)):
-                extracted_data = dni_extractor(data)
+            if(not dni_extractor(data).get("error") and newPhoto.photo_detail == "DNI"):
                 validated = True
-            elif(cedula_validator(data)):
+                extracted_data = dni_extractor(data)
+            elif(cedula_validator(data) and newPhoto.photo_detail == "CEDULA"):
                 extracted_data = cedula_extractor(data)
                 validated = True
-            elif(licencia_front_validator(data)):
+            elif(licencia_front_validator(data) and newPhoto.photo_detail == "LICENCIA"):
                 validated = True
-            elif(licencia_back_validator(data)):
-                validated = licencia_back_validator(data)
-        else:
-            return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Imagen no válida")
+            elif(licencia_back_validator(data) and newPhoto.photo_detail == "LICENCIA"):
+                validated = True
 
+    if(newPhoto.validation_attemps <3 and not validated):
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Imagen no válida")
+    
     caseId = newPhoto.case_id
     result = caseService.searchCaseById(caseId)
     if not result:
