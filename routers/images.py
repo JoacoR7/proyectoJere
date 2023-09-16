@@ -38,7 +38,7 @@ def upload(newPhoto: imageSchema):
             or newPhoto.type == "RUEDA" or newPhoto.type == "CERRADURA"):
             validated  =  car_validator(data).get("is_valid")
         elif(newPhoto.type == "DOCUMENTACION_FRONTAL" or newPhoto.type == "DOCUMENTACION_DORSAL"):
-            return customResponses.JsonEmitter.response(status.HTTP_200_OK, con="Imagen no válida")
+            return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=dni_extractor(data))
             if(not dni_extractor(data).get("error") and newPhoto.photo_detail == "DNI"):
                 validated = True
                 extracted_data = dni_extractor(data)
