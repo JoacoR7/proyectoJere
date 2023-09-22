@@ -13,13 +13,14 @@ class Case(BaseModel):
     insured_name: Optional[str]
     insured_dni: Optional[str]
     insured_phone: str
+    insured_address: str
     accident_date: Optional[datetime]
     accident_place: Optional[str]
     thef_type: Optional[str]
 
 class CaseModify(BaseModel):
     user_id: Optional[int]
-    business_id: int
+    business_id: Optional[int]
     vehicle: Optional[vehicle.Vehicle]
     accident_number: Optional[str]
     finished_at: Optional[datetime]
@@ -28,6 +29,7 @@ class CaseModify(BaseModel):
     insured_name: Optional[str]
     insured_dni: Optional[str]
     insured_phone: Optional[str]
+    insured_address: Optional[str]
     accident_date: Optional[datetime]
     accident_place: Optional[str]
     thef_type: Optional[str]    

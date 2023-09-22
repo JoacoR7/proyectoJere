@@ -29,7 +29,9 @@ R: getImage
 @image.post("/upload")
 def upload(newPhoto: imageSchema):
     validated = False
-    if newPhoto.validation_attemps<3:
+    if newPhoto.type == "FIRMA":
+        validated = True
+    if newPhoto.validation_attemps<3 and not validated:
         data = {
         "data": newPhoto.photo
         }

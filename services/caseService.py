@@ -65,7 +65,7 @@ def searchAccessToken(accessToken):
     return result
 
 def caseJSON(userId, companyId, vehicle, caseId, accidentNumber, createdAt, finishedAt, dropped,
-            policy, insuredName, insuredDNI, insuredPhone, accidentDate, accidentPlace, thefType, showImages = False):
+            policy, insuredName, insuredDNI, insuredPhone, insuredAdress, accidentDate, accidentPlace, thefType, showImages = False):
     user = userService.userJSON(id=userId)
     business = businessService.businessJSON(id=companyId)
     images = True if imageService.getImages(caseId) else False
@@ -88,6 +88,7 @@ def caseJSON(userId, companyId, vehicle, caseId, accidentNumber, createdAt, fini
         "insured_name": insuredName,
         "insured_dni": insuredDNI,
         "insured_phone": insuredPhone,
+        "insured_address": insuredAdress,
         "accident_date": accidentDate,
         "accident_place": accidentPlace,
         "theft_type": thefType

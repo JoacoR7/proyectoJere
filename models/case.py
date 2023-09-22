@@ -15,6 +15,7 @@ case = Table("cases", meta,
             Column("insured_name", String(150), nullable=True),
             Column("insured_dni", String(150), nullable=True),
             Column("insured_phone", String(150), nullable=False),
+            Column("insured_address", String(255), nullable=False),
             Column("accident_date", DateTime, nullable=True),
             Column("accident_place", String(150), nullable=True),
             Column("thef_type", Enum("partial", "inner", "outside"), nullable=True))

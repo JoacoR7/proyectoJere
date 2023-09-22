@@ -37,6 +37,7 @@ async def createCase(case: Case, request: Request):
         insured_name=case.insured_name,
         insured_dni=case.insured_dni,
         insured_phone=case.insured_phone,
+        insured_address=case.insured_address,
         accident_date=case.accident_date,
         accident_place=case.accident_place,
         thef_type=case.thef_type
@@ -82,7 +83,7 @@ async def getCases(request: Request):
     for result in results:
         case = caseService.caseJSON(result[1], result[2], result[3], result[0],
         result[4], result[5], result[6], result[7], result[8], result[9],
-        result[10], result[11], result[12], result[13], result[14])
+        result[10], result[11], result[12], result[13], result[14], result[15])
         cases.append(case)
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=cases)
 
@@ -158,15 +159,15 @@ async def modifyCase(case: CaseModify, id: int):
     if not caseToUpdate:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="El caso no existe")
     updateData = {}
-    vehicleId, response = vehicleService.createVehicle(case.vehicle)
-    if response:
-        return customResponses.JsonEmitter.response(status=status.HTTP_400_BAD_REQUEST, detail=response)
     if case.user_id != None:
         updateData["user_id"] = case.user_id
     if case.business_id != None:
         updateData["business_id"] = case.business_id
-    if case.vehicle_id != None:
-        updateData["vehicle_id"] = vehicleId
+    if case.vehicle != None:
+        vehicleId, response = vehicleService.createVehicle(case.vehicle)
+        if response:
+            return customResponses.JsonEmitter.response(status=status.HTTP_400_BAD_REQUEST, detail=response)
+        updateData["vehicle"] = vehicleId
     if case.accident_number != None:
         updateData["accident_number"] = case.accident_number
     if case.finished_at != None:
@@ -183,6 +184,8 @@ async def modifyCase(case: CaseModify, id: int):
         updateData["insured_dni"] = case.insured_dni
     if case.insured_phone != None:
         updateData["insured_phone"] = case.insured_phone
+    if case.insured_address != None:
+        updateData["insured_address"] = case.insured_address
     if case.accident_date != None:
         updateData["accident_date"] = case.accident_date
     if case.accident_place != None:
