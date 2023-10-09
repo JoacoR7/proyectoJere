@@ -18,6 +18,10 @@ case = Table("cases", meta,
             Column("insured_address", String(255), nullable=False),
             Column("accident_date", DateTime, nullable=True),
             Column("accident_place", String(150), nullable=True),
+            Column("car_use", String(50), nullable=False),
+            Column("driver_name", String(255), nullable=False),
+            Column("driver_occupation", String(255), nullable=False),
             Column("thef_type", Enum("partial", "inner", "outside"), nullable=True))
+
 
 meta.create_all(engine)

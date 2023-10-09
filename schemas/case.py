@@ -17,6 +17,9 @@ class Case(BaseModel):
     accident_date: Optional[datetime]
     accident_place: Optional[str]
     thef_type: Optional[str]
+    car_use: Optional[str]
+    driver_name: Optional[str]
+    driver_occupation: Optional[str]
 
 class CaseModify(BaseModel):
     user_id: Optional[int]
@@ -33,6 +36,9 @@ class CaseModify(BaseModel):
     accident_date: Optional[datetime]
     accident_place: Optional[str]
     thef_type: Optional[str]    
+    car_use: Optional[str]
+    driver_name: Optional[str]
+    driver_occupation: Optional[str]
 
 class CaseId(BaseModel):
     case_id: int

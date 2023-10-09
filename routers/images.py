@@ -68,7 +68,8 @@ def upload(newPhoto: imageSchema):
         validated = validated,
         validation_attemps=newPhoto.validation_attemps,
         metadata=newPhoto.metadata,
-        type=newPhoto.type
+        type=newPhoto.type,
+        detail=newPhoto.detail
     )
     try:
         result = conn.execute(query)

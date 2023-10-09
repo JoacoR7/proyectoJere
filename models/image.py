@@ -9,6 +9,7 @@ image = Table("case_photo", meta,
             Column("type", String(150), nullable=False),
             Column("validated", Boolean, nullable=False),
             Column("validation_attemps", Integer, nullable=False),
+            Column("detail", String(50), nullable=True),
             Column("metadata", String(150), nullable=True))
 
 meta.create_all(engine)

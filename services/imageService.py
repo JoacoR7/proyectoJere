@@ -14,11 +14,12 @@ def encodeImage(blob):
 def imageJSON(image):
     data = {
         "id": image[0],
-        "photo": encodeImage(image[1]),
         "case_id": image[2],
         "type": image[3],
         "validated": image[4],
         "validation_attemps": image[5],
-        "metadata": image[6]
+        "metadata": image[7],
+        "detail": image[6],
+        "photo": encodeImage(image[1])
     }
     return data

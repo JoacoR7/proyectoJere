@@ -10,3 +10,4 @@ class Image(BaseModel):
     validation_attemps: int
     metadata: str
     photo: str
+    detail: str

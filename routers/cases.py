@@ -40,7 +40,10 @@ async def createCase(case: Case, request: Request):
         insured_address=case.insured_address,
         accident_date=case.accident_date,
         accident_place=case.accident_place,
-        thef_type=case.thef_type
+        thef_type=case.thef_type,
+        car_use = case.car_use,
+        driver_name = case.driver_name,
+        driver_occupation = case.driver_occupation
     )
     try:
         result = conn.execute(newCase)
@@ -64,9 +67,11 @@ async def readCase(id: int):
     if not result:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="El caso no existe")
     # Creo un diccionario con los datos del usuario, compañía y vehículo correspondiente
-    data = caseService.caseJSON(result[1], result[2], result[3], result[0],
-        result[4], result[5], result[6], result[7], result[8], result[9],
-        result[10], result[11], result[12], result[13], result[14], True)
+    data = caseService.caseJSON(result[0], result[1], result[2], result[3],
+                                result[4], result[5], result[6], result[7],
+                                result[8], result[9], result[10], result[11],
+                                result[12], result[13], result[14], result[15],
+                                result[16], result[17], result[18], True)
     # Convierte el diccionario en formato JSON
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=data)
 
@@ -81,9 +86,11 @@ async def getCases(request: Request):
     results = conn.execute(query).fetchall()
     cases = []
     for result in results:
-        case = caseService.caseJSON(result[1], result[2], result[3], result[0],
-        result[4], result[5], result[6], result[7], result[8], result[9],
-        result[10], result[11], result[12], result[13], result[14], result[15])
+        case = caseService.caseJSON(result[0], result[1], result[2], result[3],
+                                    result[4], result[5], result[6], result[7],
+                                    result[8], result[9], result[10], result[11],
+                                    result[12], result[13], result[14], result[15],
+                                    result[16], result[17], result[18], True)
         cases.append(case)
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=cases)
 
@@ -192,6 +199,12 @@ async def modifyCase(case: CaseModify, id: int):
         updateData["accident_place"] = case.accident_place
     if case.thef_type != None:
         updateData["thef_type"] = case.thef_type
+    if case.car_use != None:
+        updateData["car_use"] = case.car_use
+    if case.driver_name != None:
+        updateData["driver_name"] = case.driver_name
+    if case.driver_occupation != None:
+        updateData["driver_occupation"] = case.driver_occupation
     try:
         query = caseModel.update().where(caseModel.c.id == id).values(**updateData)
         conn.execute(query)
