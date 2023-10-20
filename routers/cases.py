@@ -2,6 +2,7 @@ from fastapi import APIRouter, status, Request
 from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
+from models.image import image
 from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify, CaseId
 from sqlalchemy import exc, desc
 from services import caseService, vehicleService
@@ -101,6 +102,7 @@ async def deleteCase(id: int):
     if not result:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
     try:
+        conn.execute(image.delete().where(image.c.case_id == id))
         query = caseModel.delete().where(caseModel.c.id == id)
         result = conn.execute(query)
     except:
