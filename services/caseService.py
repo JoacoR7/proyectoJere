@@ -4,7 +4,7 @@ from configuration.db import conn
 from datetime import timedelta, datetime
 from jose import jwt, JWTError
 from sqlalchemy import exc
-from fastapi import status
+from fastapi import status,HTTPException
 from fastapi.responses import JSONResponse
 from services import userService, businessService, imageService, vehicleService
 
@@ -40,24 +40,23 @@ def createAccessToken(creationDate, caseId, time=1440):
         return {"message": f"Error al crear el token: {str(e)}"}
     
 def verifyAccessToken(accessToken):
-    content = {"is_valid": False, "detail": "Token vencido"}
-    status_code=status.HTTP_200_OK
-    response = JSONResponse(content=content, status_code=status_code)
-    try:
+    # try:
         # case = jwt.decode(accessToken, SECRET, algorithms=[ALGORITHM], options={"verify_exp": False})
         # if case is None:
         #     return None, response
 
-        currDate = int(datetime.now().timestamp())
-        caseDb = searchAccessToken(accessToken)
+    currDate = int(datetime.now().timestamp())
+    caseDb = searchAccessToken(accessToken)
 
-        if currDate < caseDb[2].timestamp() :
-            return None, response
+    raise HTTPException(status_code=404, detail={"currDate": currDate,"caseDbDate":caseDb[2].timestamp()})
 
-    except JWTError:
-        return None, response
+    if currDate > caseDb[2].timestamp():
+        return None
+
+    # except JWTError:
+    #     return None
     
-    return case, None
+    return case
 
 def searchAccessToken(accessToken):
     query = caseAccessModel.select().where(caseAccessModel.c.access_token == accessToken)
