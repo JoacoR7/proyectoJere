@@ -51,7 +51,7 @@ def verifyAccessToken(accessToken):
         currDate = int(datetime.now().timestamp())
         caseDb = searchAccessToken(accessToken)
 
-        if caseDb[2].timestamp() < currDate:
+        if currDate < caseDb[2].timestamp() :
             return None, response
 
     except JWTError:
