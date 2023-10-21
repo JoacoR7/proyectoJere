@@ -44,9 +44,9 @@ def verifyAccessToken(accessToken):
     status_code=status.HTTP_200_OK
     response = JSONResponse(content=content, status_code=status_code)
     try:
-        case = jwt.decode(accessToken, SECRET, algorithms=[ALGORITHM], options={"verify_exp": False})
-        if case is None:
-            return None, response
+        # case = jwt.decode(accessToken, SECRET, algorithms=[ALGORITHM], options={"verify_exp": False})
+        # if case is None:
+        #     return None, response
 
         currDate = int(datetime.now().timestamp())
         caseDb = searchAccessToken(accessToken)
