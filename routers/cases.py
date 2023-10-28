@@ -3,7 +3,7 @@ from configuration.db import conn
 from models.case import case as caseModel
 from models.caseAccessToken import caseAccessToken as AccessModel
 from models.image import image
-from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify, CaseId
+from schemas.case import Case, AccessToken, AccessTokenModify, CaseModify, CaseId, FinishedCase
 from sqlalchemy import exc, desc
 from services import caseService, vehicleService
 from datetime import datetime, timedelta
@@ -226,12 +226,20 @@ async def modifyCase(case: CaseModify, id: int):
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso editado exitosamente")
 
 @case.post("/finished")
-def finishCase(case: CaseId):
+def finishCase(case: FinishedCase):
     id = case.case_id
     result = caseService.searchCaseById(id)
+
     if not result:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
     try:
+        updateData = {
+            "due_date": datetime.now()
+        }
+
+        queryExpiration = AccessModel.update().where(AccessModel.c.access_token == case.access_token).values(**updateData)
+        conn.execute(queryExpiration)
+
         query = caseModel.update().where(caseModel.c.id == id).values(finished_at=datetime.now())
         result = conn.execute(query)
     except:
