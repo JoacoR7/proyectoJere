@@ -176,7 +176,7 @@ async def modifyCase(case: CaseModify, id: int):
         vehicleId, response = vehicleService.createVehicle(case.vehicle)
         if response:
             return customResponses.JsonEmitter.response(status=status.HTTP_400_BAD_REQUEST, detail=response)
-        updateData["vehicle"] = vehicleId
+        updateData["vehicle_id"] = vehicleId
     if case.accident_number != None:
         updateData["accident_number"] = case.accident_number
     if case.finished_at != None:
@@ -219,8 +219,9 @@ async def modifyCase(case: CaseModify, id: int):
         conn.rollback()
         sqlalchemyStatusError = customResponses.sqlAlchemySplitter.split(exception)
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=f"SQLAlchemy error {sqlalchemyStatusError}: llave foránea inexistente", exception=exception)
-    except:
+    except Exception as e:
         conn.rollback()
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail=str(e))
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="No se pudo actualizar el caso")
 
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso editado exitosamente")
