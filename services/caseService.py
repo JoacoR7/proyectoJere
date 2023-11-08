@@ -25,7 +25,7 @@ def generateToken(creationDate, caseId, time):
     access_token = jwt.encode(access_token, SECRET, algorithm=ALGORITHM)
     return access_token, exp
 
-def createAccessToken(creationDate, caseId, time=1440):
+def createAccessToken(creationDate, caseId, time=7200):
     access_token, exp = generateToken(creationDate, caseId, time)
     query = caseAccessModel.insert().values(
         access_token = access_token,

@@ -193,5 +193,14 @@ async def updateUser(id, userUpdate: UserUpdate, request: Request):
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Usuario actualizado exitosamente")
     
         
-        
+# Borrar usuario
+@user.delete("/{id}", name="Borrar usuario")
+async def deleteUser(id: int):
+    try:
+        conn.execute(users.delete().where(users.c.id == id))
+        result = conn.execute(query)
+    except:
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al eliminar el usuario")  
+    conn.commit()
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Usuario eliminado exitosamente")        
 

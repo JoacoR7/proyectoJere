@@ -102,8 +102,9 @@ async def deleteCase(id: int):
     if not result:
         return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
     try:
-        conn.execute(image.delete().where(image.c.case_id == id))
-        query = caseModel.delete().where(caseModel.c.id == id)
+        # conn.execute(image.delete().where(image.c.case_id == id))
+        # query = caseModel.delete().where(caseModel.c.id == id)
+        query = caseModel.update().where(caseModel.c.id == id).values(deleted_at=datetime.now())
         result = conn.execute(query)
     except:
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al eliminar el caso")  
