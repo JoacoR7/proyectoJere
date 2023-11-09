@@ -248,3 +248,19 @@ def finishCase(case: FinishedCase):
         return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al finalizar caso")
     conn.commit()
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso finalizado exitosamente")
+
+# Restaurar caso
+@case.put("/restore/{id}", name="Restore caso")
+async def restoreCase(id: int):
+    result = caseService.searchCaseById(id)
+    if not result:
+        return customResponses.JsonEmitter.response(status.HTTP_404_NOT_FOUND, detail="Caso no encontrado")
+    try:
+        # conn.execute(image.delete().where(image.c.case_id == id))
+        # query = caseModel.delete().where(caseModel.c.id == id)
+        query = caseModel.update().where(caseModel.c.id == id).values(deleted_at=None)
+        result = conn.execute(query)
+    except:
+        return customResponses.JsonEmitter.response(status.HTTP_400_BAD_REQUEST, detail="Error al restaurar el caso")  
+    conn.commit()
+    return customResponses.JsonEmitter.response(status.HTTP_200_OK, detail="Caso restaurado exitosamente")
