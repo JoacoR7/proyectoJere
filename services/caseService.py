@@ -68,7 +68,7 @@ def caseJSON(caseId, userId, companyId, vehicle,
             accidentNumber, createdAt, finishedAt, dropped,
             policy, insuredName, insuredDNI, insuredPhone,
             insuredAdress, accidentDate, accidentPlace, car_use,
-            driver_name, driver_occupation, thefType, showImages = False):
+            driver_name, driver_occupation, thefType, showImages = False, deleted_at = None):
     user = userService.userJSON(id=userId)
     business = businessService.businessJSON(id=companyId)
     images = True if imageService.getImages(caseId) else False
@@ -97,7 +97,8 @@ def caseJSON(caseId, userId, companyId, vehicle,
         "theft_type": thefType,
         "car_use": car_use,
         "driver_name": driver_name,
-        "driver_occupation": driver_occupation
+        "driver_occupation": driver_occupation,
+        "deleted_at": deleted_at
     }
 
     return case

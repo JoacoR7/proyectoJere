@@ -21,8 +21,8 @@ case = Table("cases", meta,
             Column("car_use", String(50), nullable=False),
             Column("driver_name", String(255), nullable=False),
             Column("driver_occupation", String(255), nullable=False),
-            Column("thef_type", Enum("partial", "inner", "outside"), nullable=True)),
-            Column("deleted_at", DateTime, nullable=True)
+            Column("thef_type", Enum("partial", "inner", "outside"), nullable=True),
+            Column("deleted_at",DateTime,nullable=True))
 
 
 meta.create_all(engine)

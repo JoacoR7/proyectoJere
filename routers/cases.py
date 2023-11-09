@@ -91,7 +91,7 @@ async def getCases(request: Request):
                                     result[4], result[5], result[6], result[7],
                                     result[8], result[9], result[10], result[11],
                                     result[12], result[13], result[14], result[15],
-                                    result[16], result[17], result[18], False)
+                                    result[16], result[17], result[18], False, result[19])
         cases.append(case)
     return customResponses.JsonEmitter.response(status.HTTP_200_OK, content=cases)
 
